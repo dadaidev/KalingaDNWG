@@ -57,7 +57,9 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
         UserAttributes(password: newPassword),
       );
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated. Please log in again.')),
       );

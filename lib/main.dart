@@ -11,8 +11,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'YOUR_SUPABASE_URL', // TODO: replace with your actual Supabase project URL
-    anonKey: 'YOUR_SUPABASE_ANON_KEY', // TODO: replace with your actual anon/public key
+    url: 'https://dtivhpgswchkjvwvjujd.supabase.co', // TODO: replace with your actual Supabase project URL
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0aXZocGdzd2Noa2p2d3ZqdWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5OTg0NTYsImV4cCI6MjA5ODU3NDQ1Nn0.B1SZHL8Du5QNh8VaKDsEXxK104wswSiuH6mGInrBqog', // TODO: replace with your actual anon/public key
   );
 
   runApp(const KalingaApp());

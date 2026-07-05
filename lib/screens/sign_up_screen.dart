@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -10,17 +11,20 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  final _fullNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
 
   static const Color _darkBlue = Color(0xFF0D3B66);
   static const Color _fieldFill = Color(0xFFB2F0F2);
 
   @override
   void dispose() {
+    _fullNameController.dispose();
     _usernameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
@@ -28,23 +32,75 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _onSignUpPressed() {
+  Future<void> _onSignUpPressed() async {
+    final fullName = _fullNameController.text.trim();
     final username = _usernameController.text.trim();
     final phone = _phoneController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (username.isEmpty || phone.isEmpty || email.isEmpty || password.isEmpty) {
+    if (fullName.isEmpty ||
+        username.isEmpty ||
+        phone.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    // TODO: hook this up to your real sign-up / registration logic.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Creating account...')),
-    );
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // Full name, username, and phone are passed as user metadata.
+      // If your database has a trigger that copies new signups into a
+      // public.users (or profiles) table, it typically reads these values
+      // from here (e.g. NEW.raw_user_meta_data->>'full_name').
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+          'username': username,
+          'phone': phone,
+        },
+      );
+
+      if (!mounted) return;
+
+      if (response.user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created! Check your email to confirm, then log in.',
+            ),
+          ),
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sign up failed: ${e.message}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Something went wrong: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   void _onLogIn() {
@@ -98,6 +154,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      // Full Name field (NEW)
+                      TextField(
+                        controller: _fullNameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: _fieldDecoration('Full Name'),
+                      ),
+                      const SizedBox(height: 14),
                       // User Name field
                       TextField(
                         controller: _usernameController,
@@ -142,7 +205,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _onSignUpPressed,
+                          onPressed: _isSubmitting ? null : _onSignUpPressed,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _darkBlue,
                             foregroundColor: Colors.white,
@@ -151,14 +214,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             elevation: 4,
                           ),
-                          child: const Text(
-                            'SIGN UP',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'SIGN UP',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 20),
