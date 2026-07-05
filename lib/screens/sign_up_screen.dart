@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'sign_up_screen.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final _usernameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
@@ -20,34 +22,34 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _onLoginPressed() {
+  void _onSignUpPressed() {
     final username = _usernameController.text.trim();
+    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
+    if (username.isEmpty || phone.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both username and password')),
+        const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    // TODO: hook this up to your real authentication logic.
+    // TODO: hook this up to your real sign-up / registration logic.
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logging in...')),
+      const SnackBar(content: Text('Creating account...')),
     );
   }
 
-  void _onForgotPassword() {
-    // TODO: navigate to your forgot-password screen.
-  }
-
-  void _onSignUp() {
+  void _onLogIn() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const SignUpScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -83,25 +85,39 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Heart + people + pill logo
                       Image.asset(
                         'lib/Assets/kalinga.png',
-                        width: 180,
+                        width: 160,
                         fit: BoxFit.contain,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       const Text(
-                        'Log in to your Account',
+                        'Create an Account',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: _darkBlue,
                         ),
                       ),
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 24),
                       // User Name field
                       TextField(
                         controller: _usernameController,
                         decoration: _fieldDecoration('User Name'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
+                      // Phone Number field
+                      TextField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: _fieldDecoration('Phone Number'),
+                      ),
+                      const SizedBox(height: 14),
+                      // Email field
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: _fieldDecoration('Email'),
+                      ),
+                      const SizedBox(height: 14),
                       // Password field
                       TextField(
                         controller: _passwordController,
@@ -120,33 +136,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      // Forgot Password link, right-aligned
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _onForgotPassword,
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            'Forgot Password',
-                            style: TextStyle(
-                              color: _darkBlue,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 24),
-                      // LOG IN button
+                      // SIGN UP button
                       SizedBox(
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _onLoginPressed,
+                          onPressed: _onSignUpPressed,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _darkBlue,
                             foregroundColor: Colors.white,
@@ -156,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             elevation: 4,
                           ),
                           child: const Text(
-                            'LOG IN',
+                            'SIGN UP',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -166,26 +162,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Sign Up prompt -- tappable "Sign Up" navigates to SignUpScreen
-                      GestureDetector(
-                        onTap: _onSignUp,
-                        behavior: HitTestBehavior.opaque,
-                        child: RichText(
-                          text: TextSpan(
-                            style: const TextStyle(color: _darkBlue, fontSize: 14),
-                            children: [
-                              const TextSpan(text: "Don't have an account? "),
-                              TextSpan(
-                                text: 'Sign Up',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                recognizer: (TapGestureRecognizer()
-                                  ..onTap = _onSignUp),
+                      // Log in prompt
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: _darkBlue, fontSize: 14),
+                          children: [
+                            const TextSpan(text: 'Do you have an account? '),
+                            TextSpan(
+                              text: 'Log in',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
                               ),
-                            ],
-                          ),
+                              recognizer: (TapGestureRecognizer()
+                                ..onTap = _onLogIn),
+                            ),
+                          ],
                         ),
                       ),
                     ],
