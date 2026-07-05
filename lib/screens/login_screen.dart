@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'sign_up_screen.dart';
+import 'forget_password.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -41,8 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _onForgotPassword() {
-    // TODO: navigate to your forgot-password screen.
+  void _onForgetPassword() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ForgetPassword()),
+    );
   }
 
   void _onSignUp() {
@@ -125,14 +128,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: _onForgotPassword,
+                          onPressed: _onForgetPassword,
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: const Text(
-                            'Forgot Password',
+                            'Forget Password',
                             style: TextStyle(
                               color: _darkBlue,
                               decoration: TextDecoration.underline,
@@ -199,3 +202,5 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
