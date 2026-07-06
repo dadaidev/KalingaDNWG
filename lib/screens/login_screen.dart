@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'sign_up_screen.dart';
 import 'forget_password.dart';
+import 'home_page.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -37,8 +38,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     // TODO: hook this up to your real authentication logic.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logging in...')),
+    // Once login is verified (e.g. after an API call returns success),
+    // navigate to the HomePage and clear the login screen from the stack
+    // so the user can't go "back" into it.
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => HomePage(userName: username),
+      ),
     );
   }
 
@@ -202,5 +208,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-
