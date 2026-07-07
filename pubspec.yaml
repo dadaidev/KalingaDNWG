@@ -47,6 +47,8 @@ flutter:
   assets:
     - lib/Assets/kalinga.png
     - lib/Assets/kalinga_text.png
+    - lib/Assets/account_circle.png
+    - lib/Assets/chat_bubble.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
