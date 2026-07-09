@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-
 import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
 import '../widgets/greeting_widget.dart';
 import '../widgets/calendar_widget.dart';
 import '../widgets/medicine_card.dart';
 import '../widgets/empty_state.dart';
-
 import '../models/medicine_item.dart';
 import '../utils/date_helper.dart';
+import 'appointment_screen.dart';
 
 class HomePage extends StatefulWidget {
   final String userName;
@@ -156,9 +155,17 @@ class _HomePageState extends State<HomePage> {
       ),
 
       bottomNavigationBar: BottomBar(
-        currentIndex: 2,
+        currentIndex: 2, // Keeps Home tab visually highlighted
         onTap: (index) {
-          // Navigation
+          if (index == 0) {
+            // Index 0 routes directly to your "My Appointments" board view
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AppointmentScreen(),
+              ),
+            );
+          }
         },
       ),
     );
