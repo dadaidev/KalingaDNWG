@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'screens/set_new_password_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Global key so we can navigate from outside the widget tree
 // (needed when Supabase fires the password-recovery event).
