@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Medication Schedule</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/schedule.css">
+
+</head>
+
+<body>
+
+    <div class="sidebar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-hospital"></i>
+
+            <h2>Kalinga</h2>
+
+        </div>
+
+ <ul>
+            <li>
+                <a href="dashboard.html">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a href="patients.html">
+                    <i class="fa-solid fa-users"></i>
+                    Patients
+                </a>
+            </li>
+
+            <li>
+                <a href="prescription.html">
+                <i class="fa-solid fa-pills"></i>
+                Prescriptions
+                </a>
+            </li>
+
+            <li class="active">
+                <a href="medication_schedule.html">
+                    <i class="fa-solid fa-clock"></i>
+                    Medication Schedule
+
+                </a>
+            </li>
+
+            <li>
+                <a href="reports.html">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Reports
+                </a>
+            </li>
+
+
+        </ul>
+    </div>
+
+    <div class="main">
+
+        <div class="topbar">
+
+            <h1>Medication Schedule</h1>
+
+            <button class="logout" onclick="logout()">
+
+                Logout
+
+            </button>
+
+        </div>
+
+        <div class="toolbar">
+
+            <div class="search-box">
+
+                <i class="fa-solid fa-search"></i>
+
+                <input type="text" placeholder="Search">
+
+            </div>
+
+            <button class="add-btn">
+
+                <i class="fa-solid fa-plus"></i>
+
+                Add Schedule
+
+            </button>
+
+        </div>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Patient</th>
+
+                        <th>Medicine</th>
+
+                        <th>Time</th>
+
+                        <th>Frequency</th>
+
+                        <th>Status</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>001</td>
+
+                        <td>Juan Dela Cruz</td>
+
+                        <td>Paracetamol</td>
+
+                        <td>8:00 AM</td>
+
+                        <td>3x Daily</td>
+
+                        <td><span class="active-status">Active</span></td>
+
+                        <td>
+
+                            <button class="edit">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button>
+
+                            <button class="delete">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ADD MODAL -->
+
+    <div id="addModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>Add Medication Schedule</h2>
+
+                <span class="close">&times;</span>
+
+            </div>
+
+            <form id="addScheduleForm">
+
+                <div class="form-group">
+
+                    <label>Patient</label>
+
+                    <input type="text" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Medicine</label>
+
+                    <input type="text" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Time</label>
+
+                    <input type="time" required>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Frequency</label>
+
+                    <select>
+
+                        <option>Once Daily</option>
+
+                        <option>2x Daily</option>
+
+                        <option>3x Daily</option>
+
+                        <option>Every 6 Hours</option>
+
+                        <option>Every 8 Hours</option>
+
+                    </select>
+
+                </div>
+
+                <button class="save-btn">
+
+                    Save Schedule
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- EDIT MODAL -->
+
+    <div id="editModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>Edit Schedule</h2>
+
+                <span class="close">&times;</span>
+
+            </div>
+
+            <form id="editScheduleForm">
+
+                <div class="form-group">
+
+                    <label>Patient</label>
+
+                    <input id="editPatient">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Medicine</label>
+
+                    <input id="editMedicine">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Time</label>
+
+                    <input type="time" id="editTime">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Frequency</label>
+
+                    <input id="editFrequency">
+
+                </div>
+
+                <button class="save-btn">
+
+                    Update Schedule
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- DELETE MODAL -->
+
+    <div id="deleteModal" class="modal">
+
+        <div class="modal-content delete-box">
+
+            <i class="fa-solid fa-trash-can"></i>
+
+            <h2>Delete Schedule?</h2>
+
+            <p>
+
+                This medication schedule will be permanently removed.
+
+            </p>
+
+            <div class="delete-buttons">
+
+                <button class="cancel-btn">
+
+                    Cancel
+
+                </button>
+
+                <button class="delete-confirm" id="confirmDelete">
+
+                    Delete
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/schedule.js"></script>
+
+</body>
+
+</html>

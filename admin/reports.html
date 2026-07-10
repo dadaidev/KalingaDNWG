@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports Management</title>
+
+    <link rel="stylesheet" href="css/reports.css">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-hospital"></i>
+
+        <h2>Kalinga</h2>
+
+    </div>
+
+        <ul>
+            <li>
+                <a href="dashboard.html">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a href="patients.html">
+                    <i class="fa-solid fa-users"></i>
+                    Patients
+                </a>
+            </li>
+
+            <li >
+                <a href="prescription.html">
+                <i class="fa-solid fa-pills"></i>
+                Prescriptions
+                </a>
+            </li>
+
+            <li  >
+                <a href="medication_schedule.html">
+
+
+                    <i class="fa-solid fa-clock"></i>
+                    Medication Schedule
+
+                </a>
+            </li>
+
+            <li class="active">
+                <a href="reports.html">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Reports
+                </a>
+            </li>
+
+
+        </ul>
+
+</div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+
+        <!-- Topbar -->
+        <header class="topbar">
+
+            <h2>Reports</h2>
+
+            <div class="profile">
+                <span>Admin</span>
+            </div>
+
+        </header>
+
+
+
+        <!-- Report Container -->
+        <section class="content">
+
+
+            <div class="header-actions">
+
+                <h2>Medical Reports</h2>
+
+                <button class="btn-add" onclick="openAddModal()">
+                    + Add Report
+                </button>
+
+            </div>
+
+
+
+            <!-- Search -->
+            <div class="search-box">
+
+                <input type="text" id="searchReport" placeholder="Search report..." onkeyup="searchReport()">
+
+            </div>
+
+
+
+            <!-- Reports Table -->
+            <table id="reportTable">
+
+                <thead>
+
+                    <tr>
+                        <th>Report ID</th>
+                        <th>Patient Name</th>
+                        <th>Report Type</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="reportList">
+
+                    <tr>
+
+                        <td>R001</td>
+                        <td>Juan Dela Cruz</td>
+                        <td>Medical Checkup</td>
+                        <td>2026-07-10</td>
+                        <td>
+                            <span class="status completed">
+                                Completed
+                            </span>
+                        </td>
+
+                        <td>
+
+                            <button class="btn-edit" onclick="openEditModal(this)">
+                                Edit
+                            </button>
+
+
+                            <button class="btn-delete" onclick="openDeleteModal(this)">
+                                Delete
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </section>
+
+
+    </div>
+
+
+
+
+
+    <!-- =========================
+     ADD REPORT MODAL
+========================= -->
+
+    <div class="modal" id="addModal">
+
+
+        <div class="modal-content">
+
+
+            <span class="close" onclick="closeAddModal()">
+                &times;
+            </span>
+
+
+            <h2>Add Report</h2>
+
+
+            <form id="addReportForm">
+
+
+                <label>
+                    Patient Name
+                </label>
+
+                <input type="text" id="addPatient" required>
+
+
+
+                <label>
+                    Report Type
+                </label>
+
+                <input type="text" id="addType" required>
+
+
+
+                <label>
+                    Report Date
+                </label>
+
+                <input type="date" id="addDate" required>
+
+
+
+                <label>
+                    Status
+                </label>
+
+
+                <select id="addStatus">
+
+                    <option value="Completed">
+                        Completed
+                    </option>
+
+                    <option value="Pending">
+                        Pending
+                    </option>
+
+                </select>
+
+
+
+                <button type="submit" class="save-btn">
+                    Save Report
+                </button>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- =========================
+     EDIT REPORT MODAL
+========================= -->
+
+
+    <div class="modal" id="editModal">
+
+
+        <div class="modal-content">
+
+
+            <span class="close" onclick="closeEditModal()">
+                &times;
+            </span>
+
+
+            <h2>Edit Report</h2>
+
+
+
+            <form id="editReportForm">
+
+
+                <input type="hidden" id="editRow">
+
+
+
+                <label>
+                    Patient Name
+                </label>
+
+                <input type="text" id="editPatient" required>
+
+
+
+                <label>
+                    Report Type
+                </label>
+
+                <input type="text" id="editType" required>
+
+
+
+                <label>
+                    Report Date
+                </label>
+
+                <input type="date" id="editDate" required>
+
+
+
+                <label>
+                    Status
+                </label>
+
+
+                <select id="editStatus">
+
+                    <option value="Completed">
+                        Completed
+                    </option>
+
+                    <option value="Pending">
+                        Pending
+                    </option>
+
+                </select>
+
+
+
+                <button type="submit" class="save-btn">
+                    Update Report
+                </button>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+    <!-- =========================
+     DELETE REPORT MODAL
+========================= -->
+
+
+    <div class="modal" id="deleteModal">
+
+
+        <div class="modal-content delete-box">
+
+
+            <span class="close" onclick="closeDeleteModal()">
+                &times;
+            </span>
+
+
+            <h2>
+                Delete Report
+            </h2>
+
+
+            <p>
+                Are you sure you want to delete this report?
+            </p>
+
+
+            <input type="hidden" id="deleteRow">
+
+
+
+            <div class="delete-actions">
+
+
+                <button class="cancel-btn" onclick="closeDeleteModal()">
+
+                    Cancel
+
+                </button>
+
+
+
+                <button class="confirm-delete" onclick="deleteReport()">
+
+                    Delete
+
+                </button>
+
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+    <script src="reports.js"></script>
+
+</body>
+
+</html>

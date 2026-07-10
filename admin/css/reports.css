@@ -1,0 +1,917 @@
+/* ==========================================
+   GOOGLE FONT
+========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ==========================================
+   RESET
+========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ==========================================
+   VARIABLES
+========================================== */
+:root {
+
+    --primary: #1565C0;
+    --primary-dark: #0D47A1;
+    --background: #F4F8FC;
+    --white: #FFFFFF;
+    --text: #333333;
+    --border: #E5E7EB;
+    --shadow: 0 4px 12px rgba(0, 0, 0, .08);
+
+    --success: #4CAF50;
+    --warning: #FFC107;
+    --danger: #E53935;
+
+}
+
+/* ==========================================
+   BODY
+========================================== */
+body {
+
+    background: var(--background);
+    color: var(--text);
+    display: flex;
+
+}
+
+.main-content{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+    padding:30px;
+    background:#f4f8fc;
+}
+
+/* ==========================================
+   SIDEBAR
+========================================== */
+.sidebar {
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 250px;
+    height: 100vh;
+
+    background: var(--primary);
+    color: var(--white);
+
+    padding: 20px;
+
+    overflow-y: auto;
+
+}
+
+/* Logo */
+
+.logo {
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 40px;
+
+}
+
+.logo i {
+
+    font-size: 28px;
+
+}
+
+.logo h2 {
+
+    font-size: 24px;
+    font-weight: 600;
+
+}
+
+/* Menu */
+
+.sidebar ul {
+
+    list-style: none;
+
+}
+
+.sidebar li {
+
+    margin-bottom: 10px;
+    border-radius: 10px;
+
+    transition: .3s;
+
+}
+
+.sidebar li a {
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    padding: 15px;
+
+    color: var(--white);
+    text-decoration: none;
+
+    border-radius: 10px;
+
+}
+
+.sidebar li a i {
+
+    width: 25px;
+    text-align: center;
+
+}
+
+/* Hover */
+
+.sidebar li:hover a {
+
+    background: var(--white);
+    color: var(--primary);
+
+}
+
+/* Active */
+
+.sidebar li.active a {
+
+    background: var(--white);
+    color: var(--primary);
+    font-weight: 600;
+
+}
+
+/* ==========================================
+   MAIN
+========================================== */
+.main {
+
+    margin-left: 250px;
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 30px;
+
+}
+
+/* ==========================================
+   TOPBAR
+========================================== */
+.topbar {
+
+    height: 75px;
+
+    background: var(--white);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 30px;
+
+    border-radius: 10px;
+
+    box-shadow: var(--shadow);
+
+    margin-bottom: 25px;
+
+}
+
+/* Left */
+
+.topbar-left h1 {
+
+    color: var(--primary);
+    font-size: 28px;
+    font-weight: 600;
+
+}
+
+/* Right */
+
+.topbar-right {
+
+    display: flex;
+    align-items: center;
+    gap: 25px;
+
+}
+
+.notification {
+
+    font-size: 22px;
+    color: var(--primary);
+    cursor: pointer;
+
+}
+
+.profile {
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+.profile img {
+
+    width: 45px;
+    height: 45px;
+
+    border-radius: 50%;
+    object-fit: cover;
+
+    border: 2px solid var(--primary);
+
+}
+
+.profile-info h4 {
+
+    font-size: 15px;
+
+}
+
+.profile-info small {
+
+    color: #777;
+
+}
+
+/* ==========================================
+   CONTENT CARD
+========================================== */
+.content {
+    width: 100%;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+.header-actions {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+
+}
+
+.header-actions h2 {
+
+    color: var(--primary);
+
+}
+
+/* ==========================================
+   SEARCH BOX
+========================================== */
+.search-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+
+.search-box input {
+
+    width: 350px;
+
+    padding: 12px 15px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    outline: none;
+
+    transition: .3s;
+
+}
+
+.search-box input:focus {
+
+    border-color: var(--primary);
+
+    box-shadow: 0 0 6px rgba(21, 101, 192, .20);
+
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background: var(--white);
+
+    overflow: hidden;
+
+}
+
+thead {
+
+    background: var(--primary);
+
+}
+
+thead th {
+
+    color: var(--white);
+
+}
+
+th,
+td {
+
+    padding: 15px;
+
+    text-align: center;
+
+    border-bottom: 1px solid #EEEEEE;
+
+    font-size: 14px;
+
+}
+
+tbody tr {
+
+    transition: .3s;
+
+}
+
+tbody tr:hover {
+
+    background: #F5F9FF;
+
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+/* Add */
+
+.btn-add {
+
+    background: var(--primary);
+
+    color: var(--white);
+
+    border: none;
+
+    padding: 10px 20px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    transition: .3s;
+
+}
+
+.btn-add:hover {
+
+    background: var(--primary-dark);
+
+}
+
+/* Edit */
+
+.btn-edit {
+
+    background: var(--warning);
+
+    color: var(--white);
+
+    border: none;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    margin-right: 6px;
+
+    transition: .3s;
+
+}
+
+.btn-edit:hover {
+
+    background: #E0A800;
+
+}
+
+/* Delete */
+
+.btn-delete {
+
+    background: var(--danger);
+
+    color: var(--white);
+
+    border: none;
+
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+.btn-delete:hover {
+
+    background: #C62828;
+
+}
+
+/* ==========================================
+   STATUS BADGES
+========================================== */
+
+.status {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Completed */
+.completed {
+    background: #D4EDDA;
+    color: #155724;
+}
+
+/* Pending */
+.pending {
+    background: #FFF3CD;
+    color: #856404;
+}
+
+/* Processing */
+.processing {
+    background: #CCE5FF;
+    color: #004085;
+}
+
+/* Cancelled */
+.cancelled {
+    background: #F8D7DA;
+    color: #721C24;
+}
+
+/* ==========================================
+   MODAL OVERLAY
+========================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, .45);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Show Modal */
+.modal.show {
+    display: flex;
+}
+
+/* ==========================================
+   MODAL CONTENT
+========================================== */
+
+.modal-content {
+
+    width: 450px;
+    max-width: 95%;
+
+    background: #fff;
+
+    border-radius: 12px;
+
+    padding: 25px;
+
+    position: relative;
+
+    animation: modalFade .35s ease;
+
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .25);
+
+}
+
+.modal-content h2 {
+
+    text-align: center;
+
+    color: var(--primary);
+
+    margin-bottom: 20px;
+
+}
+
+/* ==========================================
+   CLOSE BUTTON
+========================================== */
+
+.close {
+
+    position: absolute;
+
+    top: 15px;
+    right: 20px;
+
+    font-size: 28px;
+
+    color: #999;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+.close:hover {
+
+    color: var(--danger);
+
+}
+
+/* ==========================================
+   FORM
+========================================== */
+
+.modal-content form {
+
+    display: flex;
+    flex-direction: column;
+
+}
+
+.modal-content label {
+
+    margin-top: 12px;
+    margin-bottom: 6px;
+
+    font-weight: 500;
+
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+
+    width: 100%;
+
+    padding: 11px 15px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    outline: none;
+
+    font-size: 14px;
+
+    transition: .3s;
+
+}
+
+.modal-content textarea {
+
+    resize: vertical;
+    min-height: 90px;
+
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+
+    border-color: var(--primary);
+
+    box-shadow: 0 0 6px rgba(21, 101, 192, .20);
+
+}
+
+/* ==========================================
+   SAVE BUTTON
+========================================== */
+
+.save-btn {
+
+    margin-top: 22px;
+
+    background: var(--primary);
+
+    color: #fff;
+
+    border: none;
+
+    padding: 12px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    transition: .3s;
+
+}
+
+.save-btn:hover {
+
+    background: var(--primary-dark);
+
+}
+
+/* ==========================================
+   DELETE MODAL
+========================================== */
+
+.delete-box {
+
+    text-align: center;
+
+}
+
+.delete-box h2 {
+
+    color: var(--danger);
+
+}
+
+.delete-box p {
+
+    margin: 20px 0;
+
+    color: #666;
+
+    line-height: 1.5;
+
+}
+
+.delete-actions {
+
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+
+}
+
+/* Cancel Button */
+
+.cancel-btn {
+
+    background: #6C757D;
+
+    color: #fff;
+
+    border: none;
+
+    padding: 10px 20px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+.cancel-btn:hover {
+
+    background: #565E64;
+
+}
+
+/* Delete Button */
+
+.confirm-delete {
+
+    background: var(--danger);
+
+    color: #fff;
+
+    border: none;
+
+    padding: 10px 20px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+.confirm-delete:hover {
+
+    background: #C62828;
+
+}
+
+/* ==========================================
+   MODAL ANIMATION
+========================================== */
+
+@keyframes modalFade {
+
+    from {
+
+        opacity: 0;
+        transform: translateY(-40px);
+
+    }
+
+    to {
+
+        opacity: 1;
+        transform: translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+========================================== */
+
+@media (max-width:992px) {
+
+    .sidebar {
+
+        width: 80px;
+
+    }
+
+    .logo h2 {
+
+        display: none;
+
+    }
+
+    .sidebar li a span {
+
+        display: none;
+
+    }
+
+    .sidebar li a {
+
+        justify-content: center;
+
+    }
+
+    .main {
+
+        margin-left: 80px;
+
+    }
+
+    .topbar {
+
+        padding: 0 20px;
+
+    }
+
+    .profile-info {
+
+        display: none;
+
+    }
+
+}
+
+@media (max-width:768px) {
+
+    .content {
+
+        padding: 20px;
+        width: 100%;
+
+
+    }
+
+    .header-actions {
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+
+    }
+
+    .search-box {
+
+        flex-direction: column;
+        gap: 10px;
+
+    }
+
+    .search-box input {
+
+        width: 100%;
+
+    }
+
+    table {
+
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+
+    }
+
+    .modal-content {
+
+        width: 95%;
+
+    }
+
+}
+
+@media (max-width:480px) {
+
+    .topbar {
+
+        flex-direction: column;
+        justify-content: center;
+        height: auto;
+        gap: 10px;
+        padding: 15px;
+
+    }
+
+    .btn-add {
+
+        width: 100%;
+
+    }
+
+    .btn-edit,
+    .btn-delete {
+
+        width: 100%;
+        margin: 5px 0;
+
+    }
+
+    .delete-actions {
+
+        flex-direction: column;
+
+    }
+
+    .cancel-btn,
+    .confirm-delete {
+
+        width: 100%;
+
+    }
+
+    .modal-content {
+
+        padding: 20px;
+
+    }
+
+}

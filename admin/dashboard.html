@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kalinga Clinic Portal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+</head>
+
+<body>
+
+    <div class="sidebar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-hospital"></i>
+
+            <h2>Kalinga</h2>
+
+        </div>
+
+        <ul>
+
+            <li class="active">
+                <a href="dashboard.html">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a href="patients.html">
+                    <i class="fa-solid fa-users"></i>
+                    Patients
+                </a>
+            </li>
+
+            <li>
+                <a href="prescription.html">
+                <i class="fa-solid fa-pills"></i>
+                Prescriptions
+                </a>
+            </li>
+
+            <li>
+                <a href="medication_schedule.html">
+
+
+                    <i class="fa-solid fa-clock"></i>
+                    Medication Schedule
+
+                </a>
+            </li>
+
+            <li>
+                <a href="reports.html">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Reports
+                </a>
+            </li>
+
+        </ul>
+
+    </div>
+
+    <div class="main">
+
+        <div class="topbar">
+
+            <h1>Dashboard</h1>
+
+            <div class="admin">
+
+                <i class="fa-solid fa-user-doctor"></i>
+
+                Admin
+
+                <button onclick="logout()">Logout</button>
+
+            </div>
+
+        </div>
+
+        <div class="cards">
+
+            <div class="card">
+
+                <i class="fa-solid fa-users"></i>
+
+                <h3>120</h3>
+
+                <p>Total Patients</p>
+
+            </div>
+
+            <div class="card">
+
+                <i class="fa-solid fa-pills"></i>
+
+                <h3>78</h3>
+
+                <p>Active Medications</p>
+
+            </div>
+
+            <div class="card">
+
+                <i class="fa-solid fa-calendar-day"></i>
+
+                <h3>12</h3>
+
+                <p>Today's Checkups</p>
+
+            </div>
+
+            <div class="card">
+
+                <i class="fa-solid fa-bell"></i>
+
+                <h3>34</h3>
+
+                <p>Pending Reminders</p>
+
+            </div>
+
+        </div>
+
+        <div class="table-container">
+
+            <h2>Recent Patients</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Patient</th>
+
+                        <th>Diagnosis</th>
+
+                        <th>Status</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>Juan Dela Cruz</td>
+
+                        <td>Hypertension</td>
+
+                        <td>Active</td>
+
+                        <td>
+                            <button>View</button>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>Maria Santos</td>
+
+                        <td>Diabetes</td>
+
+                        <td>Active</td>
+
+                        <td>
+                            <button>View</button>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>Pedro Reyes</td>
+
+                        <td>Asthma</td>
+
+                        <td>Active</td>
+
+                        <td>
+                            <button>View</button>
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <script src="js/dashboard.js"></script>
+
+</body>
+
+</html>

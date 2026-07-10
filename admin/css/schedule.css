@@ -1,0 +1,454 @@
+/* ==========================================
+   Google Font
+========================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f4f8fc;
+    display:flex;
+}
+
+/* ==========================================
+   Sidebar
+========================================== */
+
+.sidebar{
+    width:250px;
+    height:100vh;
+    background:#1565C0;
+    color:#fff;
+    position:fixed;
+    left:0;
+    top:0;
+    padding:25px 20px;
+}
+
+.sidebar li a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:40px;
+}
+
+.logo i{
+    font-size:28px;
+}
+
+.logo h2{
+    font-size:24px;
+}
+
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar ul li{
+    padding:15px;
+    margin-bottom:8px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.sidebar ul li:hover{
+    background:rgba(255,255,255,.18);
+}
+
+.sidebar ul li.active{
+    background:#ffffff;
+    color:#1565C0;
+    font-weight:600;
+}
+
+.sidebar ul li i{
+    width:20px;
+}
+
+/* ==========================================
+   Main
+========================================== */
+
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    padding:30px;
+}
+
+/* ==========================================
+   Topbar
+========================================== */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.topbar h1{
+    color:#1565C0;
+}
+
+.logout{
+    background:#1565C0;
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.logout:hover{
+    background:#1565C0;
+}
+
+/* ==========================================
+   Toolbar
+========================================== */
+
+.toolbar{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+.search-box{
+    width:320px;
+    position:relative;
+}
+
+.search-box i{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#888;
+}
+
+.search-box input{
+    width:100%;
+    padding:12px 12px 12px 45px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    outline:none;
+}
+
+.add-btn{
+    background:#1565C0;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.add-btn:hover{
+    background:#1565C0;
+}
+
+/* ==========================================
+   Table
+========================================== */
+
+.table-container{
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#1565C0;
+    color:white;
+}
+
+th,
+td{
+    padding:15px;
+    text-align:left;
+}
+
+tbody tr:nth-child(even){
+    background:#f8f9fa;
+}
+
+tbody tr:hover{
+    background:#eef5ff;
+}
+
+/* ==========================================
+   Status
+========================================== */
+
+.active-status{
+    background:#d1fae5;
+    color:#0f766e;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+}
+
+/* ==========================================
+   Action Buttons
+========================================== */
+
+.edit,
+.delete{
+    border:none;
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+    margin-right:5px;
+}
+
+.edit{
+    background:#0d6efd;
+    color:white;
+}
+
+.edit:hover{
+    background:#084298;
+}
+
+.delete{
+    background:#dc3545;
+    color:white;
+}
+
+.delete:hover{
+    background:#bb2d3b;
+}
+
+/* ==========================================
+   Modal
+========================================== */
+
+.modal{
+    display:none;
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.45);
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-content{
+    background:white;
+    width:450px;
+    border-radius:15px;
+    padding:25px;
+    animation:popup .25s ease;
+}
+
+@keyframes popup{
+
+from{
+
+transform:scale(.8);
+
+opacity:0;
+
+}
+
+to{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.modal-header h2{
+    color:#1565C0;
+}
+
+.close{
+    font-size:28px;
+    cursor:pointer;
+}
+
+/* ==========================================
+   Form
+========================================== */
+
+.form-group{
+    margin-bottom:18px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:500;
+}
+
+.form-group input,
+.form-group select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    outline:none;
+}
+
+.form-group input:focus,
+.form-group select:focus{
+    border-color:#1565C0;
+}
+
+/* ==========================================
+   Save Button
+========================================== */
+
+.save-btn{
+    width:100%;
+    background:#1565C0;
+    color:white;
+    border:none;
+    padding:14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    transition:.3s;
+}
+
+.save-btn:hover{
+    background:#1565C0;
+}
+
+/* ==========================================
+   Delete Modal
+========================================== */
+
+.delete-box{
+    text-align:center;
+}
+
+.delete-box i{
+    font-size:65px;
+    color:#dc3545;
+    margin-bottom:15px;
+}
+
+.delete-box p{
+    margin:15px 0 25px;
+    color:#666;
+}
+
+.delete-buttons{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+.cancel-btn,
+.delete-confirm{
+    border:none;
+    padding:12px 25px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.cancel-btn{
+    background:#6c757d;
+    color:white;
+}
+
+.cancel-btn:hover{
+    background:#5c636a;
+}
+
+.delete-confirm{
+    background:#dc3545;
+    color:white;
+}
+
+.delete-confirm:hover{
+    background:#bb2d3b;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media(max-width:900px){
+
+.sidebar{
+    width:220px;
+}
+
+.main{
+    margin-left:220px;
+    width:calc(100% - 220px);
+}
+
+}
+
+@media(max-width:768px){
+
+.sidebar{
+    display:none;
+}
+
+.main{
+    width:100%;
+    margin-left:0;
+}
+
+.toolbar{
+    flex-direction:column;
+    gap:15px;
+}
+
+.search-box{
+    width:100%;
+}
+
+.table-container{
+    overflow-x:auto;
+}
+
+.modal-content{
+    width:92%;
+}
+
+}

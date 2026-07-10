@@ -1,0 +1,484 @@
+/* ===========================
+   Google Font
+=========================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f4f8fc;
+    display:flex;
+}
+
+/* ===========================
+   SIDEBAR
+=========================== */
+
+.sidebar{
+    width:250px;
+    height:100vh;
+    background:#1565C0;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+    padding:20px;
+}
+.sidebar li a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+}
+
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:40px;
+}
+
+.logo i{
+    font-size:28px;
+}
+
+.logo h2{
+    font-size:24px;
+    font-weight:600;
+}
+
+.sidebar ul{
+    list-style:none;
+}
+
+.sidebar li{
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.sidebar li i{
+    width:25px;
+}
+
+.sidebar li:hover{
+    background:white;
+    color:#1565C0;
+}
+
+.sidebar .active{
+    background:white;
+    color:#1565C0;
+    font-weight:600;
+}
+
+/* ===========================
+   MAIN
+=========================== */
+
+.main{
+    margin-left:250px;
+    width:100%;
+    padding:35px;
+}
+
+/* ===========================
+   TOPBAR
+=========================== */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.topbar h1{
+    color:#1565C0;
+    font-size:30px;
+}
+
+.logout{
+    border:none;
+    background:#1565C0;
+    color:white;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.logout:hover{
+    background:#0D47A1;
+}
+
+/* ===========================
+   TOOLBAR
+=========================== */
+
+.toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.search-box{
+    width:350px;
+    background:white;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    padding:0 15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.search-box i{
+    color:#1565C0;
+}
+
+.search-box input{
+    width:100%;
+    height:48px;
+    border:none;
+    outline:none;
+    padding-left:10px;
+    font-size:15px;
+}
+
+.add-btn{
+    border:none;
+    background:#1565C0;
+    color:white;
+    padding:12px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.add-btn:hover{
+    background:#0D47A1;
+}
+
+/* ===========================
+   TABLE
+=========================== */
+
+.table-container{
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#1565C0;
+    color:white;
+}
+
+th{
+    padding:15px;
+    text-align:left;
+}
+
+td{
+    padding:15px;
+    border-bottom:1px solid #eee;
+}
+
+tbody tr{
+    transition:.3s;
+}
+
+tbody tr:hover{
+    background:#f2f8ff;
+}
+
+/* ===========================
+   STATUS
+=========================== */
+
+.active-status{
+    background:#d4edda;
+    color:#1b5e20;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.inactive-status{
+    background:#ffebee;
+    color:#c62828;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+}
+
+/* ===========================
+   ACTION BUTTONS
+=========================== */
+
+.view,
+.edit,
+.delete{
+    border:none;
+    color:white;
+    width:36px;
+    height:36px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-right:5px;
+    transition:.3s;
+}
+
+.view{
+    background:#2196F3;
+}
+
+.edit{
+    background:#43A047;
+}
+
+.delete{
+    background:#E53935;
+}
+
+.view:hover{
+    background:#1976D2;
+}
+
+.edit:hover{
+    background:#2E7D32;
+}
+
+.delete:hover{
+    background:#C62828;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:1100px){
+
+.toolbar{
+    flex-direction:column;
+    gap:15px;
+    align-items:flex-start;
+}
+
+.search-box{
+    width:100%;
+}
+
+}
+
+@media(max-width:900px){
+
+.sidebar{
+    width:80px;
+}
+
+.logo h2{
+    display:none;
+}
+
+.sidebar li{
+    text-align:center;
+}
+
+.sidebar li i{
+    margin:0;
+}
+
+.sidebar li{
+    font-size:0;
+}
+
+.sidebar li i{
+    font-size:20px;
+}
+
+.main{
+    margin-left:80px;
+}
+
+}
+
+@media(max-width:700px){
+
+.table-container{
+    overflow-x:auto;
+}
+
+table{
+    min-width:900px;
+}
+
+.topbar{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:15px;
+}
+
+}
+
+/* ================= MODAL ================= */
+
+.modal{
+
+display:none;
+position:fixed;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.45);
+justify-content:center;
+align-items:center;
+z-index:999;
+
+}
+
+.modal-content{
+
+width:450px;
+background:white;
+border-radius:15px;
+padding:25px;
+animation:popup .25s ease;
+
+}
+
+@keyframes popup{
+
+from{
+
+transform:scale(.8);
+
+opacity:0;
+
+}
+
+to{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+}
+
+.modal-header{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+
+}
+
+.close{
+
+font-size:28px;
+cursor:pointer;
+
+}
+
+.form-group{
+
+margin-bottom:18px;
+
+}
+
+.form-group label{
+
+display:block;
+margin-bottom:8px;
+font-weight:500;
+
+}
+
+.form-group input,
+.form-group select{
+
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:8px;
+outline:none;
+
+}
+
+.save-btn{
+
+width:100%;
+padding:14px;
+background:#1565C0;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+
+}
+
+.delete-box{
+
+text-align:center;
+
+}
+
+.delete-box i{
+
+font-size:70px;
+color:#E53935;
+margin-bottom:20px;
+
+}
+
+.delete-buttons{
+
+margin-top:25px;
+display:flex;
+justify-content:center;
+gap:20px;
+
+}
+
+.cancel-btn{
+
+padding:10px 20px;
+border:none;
+background:#BDBDBD;
+color:white;
+border-radius:8px;
+cursor:pointer;
+
+}
+
+.delete-confirm{
+
+padding:10px 20px;
+border:none;
+background:#E53935;
+color:white;
+border-radius:8px;
+cursor:pointer;
+
+}

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Prescriptions | Kalinga Clinic Portal</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/prescription.css">
+
+</head>
+
+<body>
+
+<!-- ================= Sidebar ================= -->
+
+<div class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-hospital"></i>
+
+        <h2>Kalinga</h2>
+
+    </div>
+
+        <ul>
+            <li>
+                <a href="dashboard.html">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li>
+                <a href="patients.html">
+                    <i class="fa-solid fa-users"></i>
+                    Patients
+                </a>
+            </li>
+
+            <li class="active">
+                <a href="prescription.html">
+                <i class="fa-solid fa-pills"></i>
+                Prescriptions
+                </a>
+            </li>
+
+            <li>
+                <a href="medication_schedule.html">
+
+
+                    <i class="fa-solid fa-clock"></i>
+                    Medication Schedule
+
+                </a>
+            </li>
+
+            <li>
+                <a href="reports.html">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Reports
+                </a>
+            </li>
+
+
+        </ul>
+
+</div>
+
+<!-- ================= Main ================= -->
+
+<div class="main">
+
+    <div class="topbar">
+
+        <h1>Prescriptions</h1>
+
+        <button class="logout" onclick="logout()">
+
+            Logout
+
+        </button>
+
+    </div>
+
+    <!-- Toolbar -->
+
+    <div class="toolbar">
+
+        <div class="search-box">
+
+            <i class="fa-solid fa-search"></i>
+
+            <input
+                type="text"
+                placeholder="Search Prescription">
+
+        </div>
+
+        <button class="add-btn">
+
+            <i class="fa-solid fa-file-circle-plus"></i>
+
+            Add Prescription
+
+        </button>
+
+    </div>
+
+    <!-- Table -->
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Patient</th>
+
+                    <th>Medication</th>
+
+                    <th>Dosage</th>
+
+                    <th>Frequency</th>
+
+                    <th>Doctor</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>RX001</td>
+
+                    <td>Juan Dela Cruz</td>
+
+                    <td>Losartan</td>
+
+                    <td>50 mg</td>
+
+                    <td>Once Daily</td>
+
+                    <td>Dr. Maria Santos</td>
+
+                    <td>
+
+                        <span class="active-status">
+
+                            Active
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button class="view">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                        </button>
+
+                        <button class="edit">
+
+                            <i class="fa-solid fa-pen"></i>
+
+                        </button>
+
+                        <button class="delete">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>RX002</td>
+
+                    <td>Maria Santos</td>
+
+                    <td>Metformin</td>
+
+                    <td>500 mg</td>
+
+                    <td>Twice Daily</td>
+
+                    <td>Dr. John Cruz</td>
+
+                    <td>
+
+                        <span class="active-status">
+
+                            Active
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button class="view">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                        </button>
+
+                        <button class="edit">
+
+                            <i class="fa-solid fa-pen"></i>
+
+                        </button>
+
+                        <button class="delete">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>RX003</td>
+
+                    <td>Pedro Reyes</td>
+
+                    <td>Salbutamol</td>
+
+                    <td>2 Puffs</td>
+
+                    <td>Every 6 Hours</td>
+
+                    <td>Dr. Angela Flores</td>
+
+                    <td>
+
+                        <span class="inactive-status">
+
+                            Completed
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <button class="view">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                        </button>
+
+                        <button class="edit">
+
+                            <i class="fa-solid fa-pen"></i>
+
+                        </button>
+
+                        <button class="delete">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ================= Add Prescription Modal ================= -->
+
+<div id="addModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Add Prescription</h2>
+
+            <span class="close">&times;</span>
+
+        </div>
+
+        <form id="addPrescriptionForm">
+
+            <div class="form-group">
+
+                <label>Patient</label>
+
+                <input type="text" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Medication</label>
+
+                <input type="text" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Dosage</label>
+
+                <input type="text" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Frequency</label>
+
+                <input type="text" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Doctor</label>
+
+                <input type="text" required>
+
+            </div>
+
+            <button type="submit" class="save-btn">
+
+                Save Prescription
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= Edit Prescription Modal ================= -->
+
+<div id="editModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Edit Prescription</h2>
+
+            <span class="close">&times;</span>
+
+        </div>
+
+        <form id="editPrescriptionForm">
+
+            <div class="form-group">
+
+                <label>Patient</label>
+
+                <input type="text" id="editPatient">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Medication</label>
+
+                <input type="text" id="editMedicine">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Dosage</label>
+
+                <input type="text" id="editDosage">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Frequency</label>
+
+                <input type="text" id="editFrequency">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Doctor</label>
+
+                <input type="text" id="editDoctor">
+
+            </div>
+
+            <button type="submit" class="save-btn">
+
+                Update Prescription
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= Delete Modal ================= -->
+
+<div id="deleteModal" class="modal">
+
+    <div class="modal-content delete-box">
+
+        <i class="fa-solid fa-trash-can"></i>
+
+        <h2>Delete Prescription?</h2>
+
+        <p>
+
+            Are you sure you want to delete this prescription?
+
+        </p>
+
+        <div class="delete-buttons">
+
+            <button class="cancel-btn">
+
+                Cancel
+
+            </button>
+
+            <button id="confirmDelete" class="delete-confirm">
+
+                Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ================= ADD PRESCRIPTION ================= -->
+
+<div id="addModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Add Prescription</h2>
+
+            <span class="close">&times;</span>
+
+        </div>
+
+        <form id="addPrescriptionForm">
+
+            <div class="form-group">
+
+                <label>Patient Name</label>
+
+                <input type="text" id="patientName" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Medicine</label>
+
+                <input type="text" id="medicine" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Dosage</label>
+
+                <input type="text" id="dosage" placeholder="500 mg" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Frequency</label>
+
+                <input type="text" id="frequency" placeholder="2x Daily" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Doctor</label>
+
+                <input type="text" id="doctor" required>
+
+            </div>
+
+            <button type="submit" class="save-btn">
+
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                Save Prescription
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= EDIT PRESCRIPTION ================= -->
+
+<div id="editModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Edit Prescription</h2>
+
+            <span class="close">&times;</span>
+
+        </div>
+
+        <form id="editPrescriptionForm">
+
+            <div class="form-group">
+
+                <label>Patient Name</label>
+
+                <input type="text" id="editPatient">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Medicine</label>
+
+                <input type="text" id="editMedicine">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Dosage</label>
+
+                <input type="text" id="editDosage">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Frequency</label>
+
+                <input type="text" id="editFrequency">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Doctor</label>
+
+                <input type="text" id="editDoctor">
+
+            </div>
+
+            <button type="submit" class="save-btn">
+
+                <i class="fa-solid fa-pen"></i>
+
+                Update Prescription
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= ADD PRESCRIPTION ================= -->
+
+<div id="addModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Add Prescription</h2>
+
+            <span class="close">&times;</span>
+
+        </div>
+
+        <form id="addPrescriptionForm">
+
+            <div class="form-group">
+
+                <label>Patient Name</label>
+
+                <input type="text" id="patientName" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Medicine</label>
+
+                <input type="text" id="medicine" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Dosage</label>
+
+                <input type="text" id="dosage" placeholder="500 mg" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Frequency</label>
+
+                <input type="text" id="frequency" placeholder="2x Daily" required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Doctor</label>
+
+                <input type="text" id="doctor" required>
+
+            </div>
+
+            <button type="submit" class="save-btn">
+
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                Save Prescription
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= EDIT PRESCRIPTION ================= -->
+
+<div id="editModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>Edit Prescription</h2>
+
+            <span class="close">&times;</span>
+
+        </div>
+
+        <form id="editPrescriptionForm">
+
+            <div class="form-group">
+
+                <label>Patient Name</label>
+
+                <input type="text" id="editPatient">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Medicine</label>
+
+                <input type="text" id="editMedicine">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Dosage</label>
+
+                <input type="text" id="editDosage">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Frequency</label>
+
+                <input type="text" id="editFrequency">
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Doctor</label>
+
+                <input type="text" id="editDoctor">
+
+            </div>
+
+            <button type="submit" class="save-btn">
+
+                <i class="fa-solid fa-pen"></i>
+
+                Update Prescription
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= DELETE PRESCRIPTION ================= -->
+
+<div id="deleteModal" class="modal">
+
+    <div class="modal-content delete-box">
+
+        <i class="fa-solid fa-trash-can"></i>
+
+        <h2>Delete Prescription?</h2>
+
+        <p>
+
+            This action cannot be undone.
+
+        </p>
+
+        <div class="delete-buttons">
+
+            <button class="cancel-btn">
+
+                Cancel
+
+            </button>
+
+            <button class="delete-confirm" id="confirmDelete">
+
+                Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="js/prescription.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Patients | Kalinga Clinic Portal</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="css/patients.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+
+    <div class="sidebar">
+
+        <div class="logo">
+
+            <i class="fa-solid fa-hospital"></i>
+
+            <h2>Kalinga</h2>
+
+        </div>
+
+        <ul>
+
+            <li>
+                                <a href="dashboard.html">
+                <i class="fa-solid fa-chart-line"></i>
+                Dashboard</a>
+            </li>
+
+            <li class="active">
+                <a href="patients.html">
+                    <i class="fa-solid fa-users"></i>
+                    Patients</a>
+            </li>
+
+            <li>
+                <a href="prescription.html">
+                    <i class="fa-solid fa-pills"></i>
+                    Prescriptions</a>
+            </li>
+
+            <li>
+                <a href="medication_schedule.html">
+                    <i class="fa-solid fa-clock"></i>
+                    Medication Schedule</a>
+            </li>
+
+            <li>
+
+                <a href="report.html">
+                    <i class="fa-solid fa-file-medical"></i>
+                    Reports</a>
+            </li>
+
+            <li>
+
+        </ul>
+
+    </div>
+
+    <!-- Main -->
+
+    <div class="main">
+
+        <div class="topbar">
+
+            <h1>Patients</h1>
+
+            <button class="logout" onclick="logout()">
+
+                Logout
+
+            </button>
+
+        </div>
+
+        <!-- Search -->
+
+        <div class="toolbar">
+
+            <div class="search-box">
+
+                <i class="fa-solid fa-search"></i>
+
+                <input type="text" placeholder="Search Patient">
+
+            </div>
+
+            <button class="add-btn">
+
+                <i class="fa-solid fa-user-plus"></i>
+
+                Add Patient
+
+            </button>
+
+        </div>
+
+        <!-- Table -->
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Patient Name</th>
+
+                        <th>Age</th>
+
+                        <th>Gender</th>
+
+                        <th>Diagnosis</th>
+
+                        <th>Status</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+
+                        <td>001</td>
+
+                        <td>Juan Dela Cruz</td>
+
+                        <td>62</td>
+
+                        <td>Male</td>
+
+                        <td>Hypertension</td>
+
+                        <td><span class="active-status">Active</span></td>
+
+                        <td>
+
+                            <button class="view">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                            <button class="edit">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button>
+
+                            <button class="delete">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>002</td>
+
+                        <td>Maria Santos</td>
+
+                        <td>57</td>
+
+                        <td>Female</td>
+
+                        <td>Diabetes</td>
+
+                        <td><span class="active-status">Active</span></td>
+
+                        <td>
+
+                            <button class="view">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                            <button class="edit">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button>
+
+                            <button class="delete">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td>003</td>
+
+                        <td>Pedro Reyes</td>
+
+                        <td>40</td>
+
+                        <td>Male</td>
+
+                        <td>Asthma</td>
+
+                        <td><span class="inactive-status">Inactive</span></td>
+
+                        <td>
+
+                            <button class="view">
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
+                            <button class="edit">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </button>
+
+                            <button class="delete">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ================= Add Patient Modal ================= -->
+
+    <div id="addModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h2>Add Patient</h2>
+                <span class="close" onclick="closeAddModal()">&times;</span>
+            </div>
+
+            <form id="addPatientForm">
+
+                <div class="form-group">
+                    <label>Patient Name</label>
+                    <input type="text" placeholder="Enter patient name">
+                </div>
+
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number">
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+
+                    <select>
+
+                        <option>Male</option>
+
+                        <option>Female</option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+                    <label>Diagnosis</label>
+
+                    <input type="text">
+
+                </div>
+
+                <button type="submit" class="save-btn">
+
+                    Save Patient
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- ================= Edit Modal ================= -->
+
+    <div id="editModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>Edit Patient</h2>
+
+                <span class="close" onclick="closeEditModal()">&times;</span>
+
+            </div>
+
+            <form id="editPatientForm">
+
+                <div class="form-group">
+
+                    <label>Patient Name</label>
+
+                    <input type="text" id="editName">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Age</label>
+
+                    <input type="number" id="editAge">
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Gender</label>
+
+                    <select id="editGender">
+
+                        <option>Male</option>
+
+                        <option>Female</option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Diagnosis</label>
+
+                    <input type="text" id="editDiagnosis">
+
+                </div>
+
+                <button class="save-btn">
+
+                    Update Patient
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- ================= Delete Modal ================= -->
+
+    <!-- ================= Delete Modal ================= -->
+
+    <div id="deleteModal" class="modal">
+
+        <div class="modal-content delete-box">
+
+            <i class="fa-solid fa-trash-can"></i>
+
+            <h2>Delete Patient?</h2>
+
+            <p>
+
+                Are you sure you want to delete this patient?
+
+            </p>
+
+            <div class="delete-buttons">
+
+                <button type="button" class="cancel-btn" onclick="closeDeleteModal()">
+
+                    Cancel
+
+                </button>
+
+                <button type="button" id="confirmDelete" class="delete-confirm">
+
+                    Delete
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+    <script src="js/patients.js"></script>
+
+</body>
+
+</html>
