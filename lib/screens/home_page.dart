@@ -8,14 +8,12 @@ import '../widgets/empty_state.dart';
 import '../models/medicine_item.dart';
 import '../utils/date_helper.dart';
 import 'appointment_screen.dart';
+import 'cabinet_screen.dart';
 
 class HomePage extends StatefulWidget {
   final String userName;
 
-  const HomePage({
-    super.key,
-    required this.userName,
-  });
+  const HomePage({super.key, required this.userName});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -35,9 +33,7 @@ class _HomePageState extends State<HomePage> {
     DateTime(2026, 7, 29),
   };
 
-  final Set<DateTime> takenDays = {
-    DateTime(2026, 7, 12),
-  };
+  final Set<DateTime> takenDays = {DateTime(2026, 7, 12)};
 
   final List<MedicineItem> medicines = [
     MedicineItem(
@@ -70,13 +66,13 @@ class _HomePageState extends State<HomePage> {
     selectedDay = todayDate;
   }
 
-  List<MedicineItem> get medicinesToday =>
-      medicines.where((e) => dateOnly(e.date) == dateOnly(selectedDay)).toList();
+  List<MedicineItem> get medicinesToday => medicines
+      .where((e) => dateOnly(e.date) == dateOnly(selectedDay))
+      .toList();
 
   void changeMonth(int value) {
     setState(() {
-      focusedMonth =
-          DateTime(focusedMonth.year, focusedMonth.month + value, 1);
+      focusedMonth = DateTime(focusedMonth.year, focusedMonth.month + value, 1);
     });
   }
 
@@ -110,10 +106,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              GreetingWidget(
-                userName: widget.userName,
-              ),
+              GreetingWidget(userName: widget.userName),
 
               const SizedBox(height: 20),
 
@@ -132,10 +125,7 @@ class _HomePageState extends State<HomePage> {
 
               const Text(
                 "Today's Medicine",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 15),
@@ -154,16 +144,21 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
+      // 2. ITONG BAHAGI ANG PINAGSAMA NATING RE-ALIGNED BOTTOM BAR:
       bottomNavigationBar: BottomBar(
-        currentIndex: 2, // Keeps Home tab visually highlighted
+        currentIndex: 2,
         onTap: (index) {
           if (index == 0) {
-            // Index 0 routes directly to your "My Appointments" board view
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const AppointmentScreen(),
               ),
+            );
+          } else if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CabinetScreen()),
             );
           }
         },
