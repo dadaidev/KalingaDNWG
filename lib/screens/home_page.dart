@@ -144,7 +144,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      // 2. ITONG BAHAGI ANG PINAGSAMA NATING RE-ALIGNED BOTTOM BAR:
       bottomNavigationBar: BottomBar(
         currentIndex: 2,
         onTap: (index) {
@@ -158,7 +157,10 @@ class _HomePageState extends State<HomePage> {
           } else if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const CabinetScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    CabinetScreen(userName: widget.userName), // now passes userName
+              ),
             );
           }
         },

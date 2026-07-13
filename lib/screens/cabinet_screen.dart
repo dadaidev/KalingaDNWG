@@ -5,19 +5,22 @@ import 'cabinet_colors.dart';
 import 'medicine_card.dart';
 import 'medicine_model.dart';
 import 'add_medicine_screen.dart';
+import 'appointment_screen.dart';
+import 'home_page.dart';
 
-// TODO: replace these with your actual screen imports once they exist, e.g.:
-// import 'appointment_screen.dart';
-// import 'home_screen.dart';
+// TODO: import your real Doctor/Settings screens once they exist, e.g.:
 // import 'doctor_screen.dart';
 // import 'settings_screen.dart';
 
-/// "My Medicine" cabinet screen — owns its own Scaffold + TopBar + BottomBar,
-/// matching the pattern used by the other tabs in the app.
 class CabinetScreen extends StatefulWidget {
   final List<Medicine> initialMedicines;
+  final String userName; // needed so we can navigate back to HomePage
 
-  const CabinetScreen({super.key, this.initialMedicines = const []});
+  const CabinetScreen({
+    super.key,
+    this.initialMedicines = const [],
+    required this.userName,
+  });
 
   @override
   State<CabinetScreen> createState() => _CabinetScreenState();
@@ -34,13 +37,22 @@ class _CabinetScreenState extends State<CabinetScreen> {
   void _onTabTapped(int index) {
     if (index == _tabIndex) return; // already here
 
-    // TODO: swap these placeholders for your real screens once they exist.
+    // Home and Appointment now point at the real screens.
+    // Doctor and Settings stay on _PlaceholderScreen until those exist.
     final Widget destination = switch (index) {
-      0 => const _PlaceholderScreen(label: 'Appointment'),
-      2 => const _PlaceholderScreen(label: 'Home'),
-      3 => const _PlaceholderScreen(label: 'Doctor'),
-      4 => const _PlaceholderScreen(label: 'Settings'),
-      _ => const _PlaceholderScreen(label: 'Unknown'),
+      0 => const AppointmentScreen(),
+      2 => HomePage(userName: widget.userName),
+      3 => _PlaceholderScreen(
+          label: 'doctor_screen',
+          tabIndex: 3,
+          userName: widget.userName,
+        ),
+      4 => _PlaceholderScreen(
+          label: 'settings_screen',
+          tabIndex: 4,
+          userName: widget.userName,
+        ),
+      _ => HomePage(userName: widget.userName),
     };
 
     Navigator.of(context).pushReplacement(
@@ -164,7 +176,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
                     color: _deleteMode
                         ? CabinetColors.subtitleText
                         : CabinetColors.deleteRed,
-                    onPressed: _deleteMode ? _toggleDeleteMode : _toggleDeleteMode,
+                    onPressed: _toggleDeleteMode,
                   ),
                 ),
               ],
@@ -300,27 +312,51 @@ class _DeleteConfirmDialog extends StatelessWidget {
   }
 }
 
-/// Temporary stand-in used when navigating to tabs that don't have a real
-/// screen yet. Delete this once Appointment/Home/Doctor/Settings screens
-/// exist, and point _onTabTapped() at those instead.
+/// Temporary stand-in used ONLY for tabs that don't have a real screen yet
+/// (Doctor, Settings). Delete this once those screens exist, and point
+/// _onTabTapped() at the real ones instead — same as Appointment/Home above.
 class _PlaceholderScreen extends StatelessWidget {
   final String label;
-  const _PlaceholderScreen({required this.label});
+  final int tabIndex;
+  final String userName;
+
+  const _PlaceholderScreen({
+    required this.label,
+    required this.tabIndex,
+    required this.userName,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopBar(),
-      body: Center(child: Text('$label screen goes here')),
+      body: Center(child: Text('$label appointment_screen')),
       bottomNavigationBar: BottomBar(
-        currentIndex: switch (label) {
-          'Appointment' => 0,
-          'Home' => 2,
-          'Doctor' => 3,
-          'Settings' => 4,
-          _ => 0,
+        currentIndex: tabIndex,
+        onTap: (index) {
+          if (index == tabIndex) return;
+
+          final Widget destination = switch (index) {
+            0 => const AppointmentScreen(),
+            1 => CabinetScreen(userName: userName),
+            2 => HomePage(userName: userName),
+            3 => _PlaceholderScreen(
+                label: 'doctor_screen',
+                tabIndex: 3,
+                userName: userName,
+              ),
+            4 => _PlaceholderScreen(
+                label: 'settings_screen',
+                tabIndex: 4,
+                userName: userName,
+              ),
+            _ => HomePage(userName: userName),
+          };
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => destination),
+          );
         },
-        onTap: (_) {}, // TODO: wire up once real screens exist
       ),
     );
   }

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'cabinet_colors.dart';
 import 'medicine_model.dart';
 
-/// Body content for the "Add Medicine" form.
+/// "Add Medicine" form screen.
 ///
-/// No Scaffold/AppBar/BottomNav here either — same reasoning as CabinetScreen.
-/// Push this with Navigator and it returns a [Medicine] via Navigator.pop
-/// when the user taps Add, or null when they Cancel.
+/// Wrapped in its own Scaffold so TextFormField/DropdownButton/etc. have a
+/// proper Material ancestor. Push this with Navigator and it returns a
+/// [Medicine] via Navigator.pop when the user taps Add, or null when they
+/// Cancel.
 class AddMedicineScreen extends StatefulWidget {
   final Medicine? existing; // pass in to edit, leave null to create new
 
@@ -101,127 +102,131 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: CabinetColors.pageBackground,
-      padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.existing == null ? 'Add Medicine' : 'Edit Medicine',
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: CabinetColors.titleText,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: CabinetColors.formBackground,
-                  borderRadius: BorderRadius.circular(16),
+    return Scaffold(
+      backgroundColor: CabinetColors.pageBackground,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.existing == null ? 'Add Medicine' : 'Edit Medicine',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: CabinetColors.titleText,
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _FieldLabel('Medicine Name'),
-                      _TextInput(
-                        controller: _nameCtrl,
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      _FieldLabel('Generic Name'),
-                      _TextInput(controller: _genericCtrl),
-                      const SizedBox(height: 12),
-                      _FieldLabel('Medicine Type'),
-                      _TypeDropdown(
-                        value: _type,
-                        onChanged: (v) => setState(() => _type = v),
-                      ),
-                      const SizedBox(height: 12),
-                      _FieldLabel('Pieces/Dosage'),
-                      _TextInput(
-                        controller: _dosageCtrl,
-                        hint: 'e.g. 1pc Only',
-                      ),
-                      const SizedBox(height: 12),
-                      _FieldLabel('Purpose/Condition'),
-                      _TextInput(controller: _purposeCtrl, minLines: 3, maxLines: 5),
-                      const SizedBox(height: 12),
-                      _FieldLabel('Frequency'),
-                      _TextInput(
-                        controller: _frequencyCtrl,
-                        hint: 'e.g. Once a day',
-                      ),
-                      const SizedBox(height: 12),
-                      _FieldLabel('Time to Take'),
-                      _TimePickerField(value: _timeToTake, onTap: _pickTime),
-                      const SizedBox(height: 12),
-                      Center(
-                        child: Column(
-                          children: [
-                            const Text(
-                              'Meal',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: CabinetColors.titleText,
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: CabinetColors.formBackground,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _FieldLabel('Medicine Name'),
+                          _TextInput(
+                            controller: _nameCtrl,
+                            validator: (v) =>
+                                (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          _FieldLabel('Generic Name'),
+                          _TextInput(controller: _genericCtrl),
+                          const SizedBox(height: 12),
+                          _FieldLabel('Medicine Type'),
+                          _TypeDropdown(
+                            value: _type,
+                            onChanged: (v) => setState(() => _type = v),
+                          ),
+                          const SizedBox(height: 12),
+                          _FieldLabel('Pieces/Dosage'),
+                          _TextInput(
+                            controller: _dosageCtrl,
+                            hint: 'e.g. 1pc Only',
+                          ),
+                          const SizedBox(height: 12),
+                          _FieldLabel('Purpose/Condition'),
+                          _TextInput(controller: _purposeCtrl, minLines: 3, maxLines: 5),
+                          const SizedBox(height: 12),
+                          _FieldLabel('Frequency'),
+                          _TextInput(
+                            controller: _frequencyCtrl,
+                            hint: 'e.g. Once a day',
+                          ),
+                          const SizedBox(height: 12),
+                          _FieldLabel('Time to Take'),
+                          _TimePickerField(value: _timeToTake, onTap: _pickTime),
+                          const SizedBox(height: 12),
+                          Center(
+                            child: Column(
                               children: [
-                                _MealRadio(
-                                  label: 'Before',
-                                  selected: _meal == MealTiming.before,
-                                  onTap: () =>
-                                      setState(() => _meal = MealTiming.before),
+                                const Text(
+                                  'Meal',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: CabinetColors.titleText,
+                                  ),
                                 ),
-                                const SizedBox(width: 24),
-                                _MealRadio(
-                                  label: 'After',
-                                  selected: _meal == MealTiming.after,
-                                  onTap: () =>
-                                      setState(() => _meal = MealTiming.after),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _MealRadio(
+                                      label: 'Before',
+                                      selected: _meal == MealTiming.before,
+                                      onTap: () =>
+                                          setState(() => _meal = MealTiming.before),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    _MealRadio(
+                                      label: 'After',
+                                      selected: _meal == MealTiming.after,
+                                      onTap: () =>
+                                          setState(() => _meal = MealTiming.after),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _PillButton(
-                  label: widget.existing == null ? 'Add' : 'Save',
-                  color: CabinetColors.addGreen,
-                  onPressed: _submit,
-                ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _PillButton(
+                      label: widget.existing == null ? 'Add' : 'Save',
+                      color: CabinetColors.addGreen,
+                      onPressed: _submit,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _PillButton(
+                      label: 'Cancel',
+                      color: CabinetColors.deleteRed,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: _PillButton(
-                  label: 'Cancel',
-                  color: CabinetColors.deleteRed,
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ),
+              const SizedBox(height: 8),
             ],
           ),
-          const SizedBox(height: 8),
-        ],
+        ),
       ),
     );
   }

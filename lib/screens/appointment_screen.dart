@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import '../services/appointment_service.dart';
 import '../models/appointment.dart';
-import 'book_appointment_screen.dart'; // UPDATED: Import the new booking screen
+import 'book_appointment_screen.dart';
 import '../widgets/bottom_bar.dart';
+import 'cabinet_screen.dart'; // ADDED: needed to navigate to the Cabinet tab
 
 class AppointmentScreen extends StatefulWidget {
-  const AppointmentScreen({super.key});
+  // ADDED: optional so existing call sites like `const AppointmentScreen()`
+  // still compile. Pass the real signed-in user's name when you have it,
+  // e.g. AppointmentScreen(userName: widget.userName) from HomePage.
+  final String userName;
+
+  const AppointmentScreen({super.key, this.userName = ''});
 
   @override
   State<AppointmentScreen> createState() => _AppointmentScreenState();
@@ -13,11 +19,11 @@ class AppointmentScreen extends StatefulWidget {
 
 class _AppointmentScreenState extends State<AppointmentScreen> {
   final AppointmentService _service = AppointmentService();
-  
+
   // Patient ID linked to database seeds
   final String mockPatientId = 'a1111111-1111-1111-1111-111111111111';
   late Future<List<Appointment>> _appointmentsFuture;
-  
+
   // Track selected appointment index for the Delete button target
   int _selectedIndex = 0;
 
@@ -45,6 +51,30 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       default:
         return Colors.grey;
     }
+  }
+
+  // ADDED: centralized tab handler, same pattern used by the other screens.
+  void _onTabTapped(int index) {
+    const int tabIndex = 0; // Appointment is index 0
+    if (index == tabIndex) return; // already here
+
+    if (index == 2) {
+      // Home was reached by pushing Appointment on top of it, so just pop back.
+      Navigator.pop(context);
+      return;
+    }
+
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CabinetScreen(userName: widget.userName),
+        ),
+      );
+      return;
+    }
+
+    // TODO: wire up Doctor(3) and Settings(4) once those screens exist.
   }
 
   @override
@@ -105,7 +135,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFE3F2FD),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: isSelected 
+                                  border: isSelected
                                       ? Border.all(color: const Color(0xFF1E3A5F), width: 2)
                                       : null,
                                 ),
@@ -156,7 +186,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                           },
                         ),
                 ),
-                
+
                 // FIXED INTERACTIVE FOOTER ACTIONS
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -166,7 +196,6 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            // UPDATED: Navigates cleanly forward to the setup booking form
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -186,7 +215,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      
+
                       // DELETE ACTION BUTTON
                       Expanded(
                         child: ElevatedButton(
@@ -223,12 +252,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         },
       ),
       bottomNavigationBar: BottomBar(
-        currentIndex: 0, 
-        onTap: (index) {
-          if (index == 2) {
-            Navigator.pop(context); 
-          }
-        },
+        currentIndex: 0,
+        onTap: _onTabTapped, // UPDATED: now also handles Cabinet(1)
       ),
     );
   }
