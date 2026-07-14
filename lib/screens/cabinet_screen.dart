@@ -7,14 +7,11 @@ import 'medicine_model.dart';
 import 'add_medicine_screen.dart';
 import 'appointment_screen.dart';
 import 'home_page.dart';
-
-// TODO: import your real Doctor/Settings screens once they exist, e.g.:
-// import 'doctor_screen.dart';
-// import 'settings_screen.dart';
+import 'doctor_screen.dart';
 
 class CabinetScreen extends StatefulWidget {
   final List<Medicine> initialMedicines;
-  final String userName; // needed so we can navigate back to HomePage
+  final String userName; // needed so we can navigate to the other tabs
 
   const CabinetScreen({
     super.key,
@@ -34,30 +31,38 @@ class _CabinetScreenState extends State<CabinetScreen> {
   // Cabinet is index 1: Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
   static const int _tabIndex = 1;
 
+  // Appointment, Home, and Doctor all have real screens now, so those
+  // tabs navigate. Settings(4) is TODO until that screen exists.
+  // Uses pushReplacement so the stack stays consistent across all tabs.
   void _onTabTapped(int index) {
     if (index == _tabIndex) return; // already here
 
-    // Home and Appointment now point at the real screens.
-    // Doctor and Settings stay on _PlaceholderScreen until those exist.
-    final Widget destination = switch (index) {
-      0 => const AppointmentScreen(),
-      2 => HomePage(userName: widget.userName),
-      3 => _PlaceholderScreen(
-          label: 'doctor_screen',
-          tabIndex: 3,
-          userName: widget.userName,
-        ),
-      4 => _PlaceholderScreen(
-          label: 'settings_screen',
-          tabIndex: 4,
-          userName: widget.userName,
-        ),
-      _ => HomePage(userName: widget.userName),
-    };
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => destination),
-    );
+    switch (index) {
+      case 0:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => AppointmentScreen(userName: widget.userName),
+          ),
+        );
+        break;
+      case 2:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => HomePage(userName: widget.userName),
+          ),
+        );
+        break;
+      case 3:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => DoctorScreen(userName: widget.userName),
+          ),
+        );
+        break;
+      default:
+        // TODO: wire up Settings(4) once that screen exists.
+        break;
+    }
   }
 
   @override
@@ -307,56 +312,6 @@ class _DeleteConfirmDialog extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Temporary stand-in used ONLY for tabs that don't have a real screen yet
-/// (Doctor, Settings). Delete this once those screens exist, and point
-/// _onTabTapped() at the real ones instead — same as Appointment/Home above.
-class _PlaceholderScreen extends StatelessWidget {
-  final String label;
-  final int tabIndex;
-  final String userName;
-
-  const _PlaceholderScreen({
-    required this.label,
-    required this.tabIndex,
-    required this.userName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const TopBar(),
-      body: Center(child: Text('$label appointment_screen')),
-      bottomNavigationBar: BottomBar(
-        currentIndex: tabIndex,
-        onTap: (index) {
-          if (index == tabIndex) return;
-
-          final Widget destination = switch (index) {
-            0 => const AppointmentScreen(),
-            1 => CabinetScreen(userName: userName),
-            2 => HomePage(userName: userName),
-            3 => _PlaceholderScreen(
-                label: 'doctor_screen',
-                tabIndex: 3,
-                userName: userName,
-              ),
-            4 => _PlaceholderScreen(
-                label: 'settings_screen',
-                tabIndex: 4,
-                userName: userName,
-              ),
-            _ => HomePage(userName: userName),
-          };
-
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => destination),
-          );
-        },
       ),
     );
   }

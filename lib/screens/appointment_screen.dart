@@ -3,12 +3,13 @@ import '../services/appointment_service.dart';
 import '../models/appointment.dart';
 import 'book_appointment_screen.dart';
 import '../widgets/bottom_bar.dart';
-import 'cabinet_screen.dart'; // ADDED: needed to navigate to the Cabinet tab
+import 'cabinet_screen.dart';
+import 'home_page.dart';
+import 'doctor_screen.dart';
 
 class AppointmentScreen extends StatefulWidget {
-  // ADDED: optional so existing call sites like `const AppointmentScreen()`
-  // still compile. Pass the real signed-in user's name when you have it,
-  // e.g. AppointmentScreen(userName: widget.userName) from HomePage.
+  // Pass the real signed-in user's name when you have it,
+  // e.g. AppointmentScreen(userName: widget.userName) from HomePage/Cabinet.
   final String userName;
 
   const AppointmentScreen({super.key, this.userName = ''});
@@ -26,6 +27,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
 
   // Track selected appointment index for the Delete button target
   int _selectedIndex = 0;
+
+  // Appointment is index 0 in the bottom tab order:
+  // Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
+  static const int _tabIndex = 0;
 
   @override
   void initState() {
@@ -53,28 +58,39 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     }
   }
 
-  // ADDED: centralized tab handler, same pattern used by the other screens.
+  // Cabinet, Home, and Doctor all have real screens now, so those tabs
+  // navigate. Settings(4) is TODO until that screen exists. Uses
+  // pushReplacement so the stack stays consistent across all tabs
+  // (no back-stack pileup between tabs).
   void _onTabTapped(int index) {
-    const int tabIndex = 0; // Appointment is index 0
-    if (index == tabIndex) return; // already here
+    if (index == _tabIndex) return; // already here
 
-    if (index == 2) {
-      // Home was reached by pushing Appointment on top of it, so just pop back.
-      Navigator.pop(context);
-      return;
+    switch (index) {
+      case 1:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => CabinetScreen(userName: widget.userName),
+          ),
+        );
+        break;
+      case 2:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => HomePage(userName: widget.userName),
+          ),
+        );
+        break;
+      case 3:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => DoctorScreen(userName: widget.userName),
+          ),
+        );
+        break;
+      default:
+        // TODO: wire up Settings(4) once that screen exists.
+        break;
     }
-
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CabinetScreen(userName: widget.userName),
-        ),
-      );
-      return;
-    }
-
-    // TODO: wire up Doctor(3) and Settings(4) once those screens exist.
   }
 
   @override
@@ -252,8 +268,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         },
       ),
       bottomNavigationBar: BottomBar(
-        currentIndex: 0,
-        onTap: _onTabTapped, // UPDATED: now also handles Cabinet(1)
+        currentIndex: _tabIndex,
+        onTap: _onTabTapped,
       ),
     );
   }

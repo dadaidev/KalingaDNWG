@@ -9,6 +9,7 @@ import '../models/medicine_item.dart';
 import '../utils/date_helper.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
+import 'doctor_screen.dart';
 
 class HomePage extends StatefulWidget {
   final String userName;
@@ -24,6 +25,9 @@ class _HomePageState extends State<HomePage> {
 
   late DateTime focusedMonth;
   late DateTime selectedDay;
+
+  // Home is index 2: Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
+  static const int _tabIndex = 2;
 
   final Set<DateTime> daysWithDose = {
     DateTime(2026, 7, 1),
@@ -95,6 +99,25 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Home, Cabinet, Appointment, and Doctor now all have real screens.
+  // Settings(4) stays TODO until that screen exists.
+  // Uses pushReplacement so the stack stays consistent with the other
+  // tab screens (no back-stack pileup when switching tabs).
+  void _onTabTapped(int index) {
+    if (index == _tabIndex) return; // already on Home
+
+    final Widget destination = switch (index) {
+      0 => AppointmentScreen(userName: widget.userName),
+      1 => CabinetScreen(userName: widget.userName),
+      3 => DoctorScreen(userName: widget.userName),
+      _ => HomePage(userName: widget.userName), // Settings(4) TODO
+    };
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => destination),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,25 +168,8 @@ class _HomePageState extends State<HomePage> {
       ),
 
       bottomNavigationBar: BottomBar(
-        currentIndex: 2,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AppointmentScreen(),
-              ),
-            );
-          } else if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    CabinetScreen(userName: widget.userName), // now passes userName
-              ),
-            );
-          }
-        },
+        currentIndex: _tabIndex,
+        onTap: _onTabTapped,
       ),
     );
   }
