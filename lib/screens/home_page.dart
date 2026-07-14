@@ -10,6 +10,7 @@ import '../utils/date_helper.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
 import 'doctor_screen.dart';
+import 'settings_screen.dart';
 
 class HomePage extends StatefulWidget {
   final String userName;
@@ -99,10 +100,9 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Home, Cabinet, Appointment, and Doctor now all have real screens.
-  // Settings(4) stays TODO until that screen exists.
-  // Uses pushReplacement so the stack stays consistent with the other
-  // tab screens (no back-stack pileup when switching tabs).
+  // Home, Cabinet, Appointment, Doctor, and Settings now all have real
+  // screens. Uses pushReplacement so the stack stays consistent with the
+  // other tab screens (no back-stack pileup when switching tabs).
   void _onTabTapped(int index) {
     if (index == _tabIndex) return; // already on Home
 
@@ -110,7 +110,8 @@ class _HomePageState extends State<HomePage> {
       0 => AppointmentScreen(userName: widget.userName),
       1 => CabinetScreen(userName: widget.userName),
       3 => DoctorScreen(userName: widget.userName),
-      _ => HomePage(userName: widget.userName), // Settings(4) TODO
+      4 => SettingsScreen(userName: widget.userName),
+      _ => HomePage(userName: widget.userName),
     };
 
     Navigator.of(context).pushReplacement(

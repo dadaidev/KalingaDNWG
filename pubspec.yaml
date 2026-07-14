@@ -11,7 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
+  image_picker: ^1.1.2  
+
   intl: ^0.19.0
 
   cupertino_icons: ^1.0.8
@@ -39,8 +40,6 @@ flutter:
     - .env
     - lib/Assets/kalinga.png
     - lib/Assets/kalinga_text.png
-    - lib/Assets/account_circle.png
-    - lib/Assets/chat_bubble.png
 
 flutter_launcher_icons:
   android: true
