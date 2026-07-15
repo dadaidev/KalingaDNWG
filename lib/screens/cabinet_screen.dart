@@ -12,7 +12,7 @@ import 'settings_screen.dart';
 
 class CabinetScreen extends StatefulWidget {
   final List<Medicine> initialMedicines;
-  final String userName; // needed so we can navigate to the other tabs
+  final String userName;
 
   const CabinetScreen({
     super.key,
@@ -29,14 +29,10 @@ class _CabinetScreenState extends State<CabinetScreen> {
   bool _deleteMode = false;
   final Set<String> _selectedIds = {};
 
-  // Cabinet is index 1: Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
   static const int _tabIndex = 1;
 
-  // Appointment, Home, Doctor, and Settings all have real screens now,
-  // so every tab navigates. Uses pushReplacement so the stack stays
-  // consistent across all tabs (no back-stack pileup between tabs).
   void _onTabTapped(int index) {
-    if (index == _tabIndex) return; // already here
+    if (index == _tabIndex) return;
 
     switch (index) {
       case 0:
@@ -79,11 +75,9 @@ class _CabinetScreenState extends State<CabinetScreen> {
   void _toggleDeleteMode() {
     setState(() {
       if (_deleteMode) {
-        // Cancel out of selection mode.
         _deleteMode = false;
         _selectedIds.clear();
       } else if (_medicines.isEmpty) {
-        // Nothing to delete.
         return;
       } else {
         _deleteMode = true;
@@ -112,7 +106,6 @@ class _CabinetScreenState extends State<CabinetScreen> {
 
   Future<void> _confirmDelete() async {
     if (_selectedIds.isEmpty) {
-      // Tapping Delete with nothing selected just cancels selection mode.
       _toggleDeleteMode();
       return;
     }
@@ -135,7 +128,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const TopBar(), // adjust props if your TopBar constructor needs any
+      appBar: const TopBar(),
       body: Container(
         color: CabinetColors.pageBackground,
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),

@@ -27,7 +27,7 @@ class KalingaApp extends StatefulWidget {
 }
 
 class _KalingaAppState extends State<KalingaApp> {
-  @overri
+  @override
   void initState() {
     super.initState();
     _listenForPasswordRecovery();
