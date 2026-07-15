@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
 import 'home_page.dart';
@@ -31,6 +33,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // TODO: replace with real medication history data from your storage/API.
   final List<Map<String, String>> _medicationHistory = [];
 
+  // Holds the profile picture picked/uploaded by the user.
+  // TODO: replace with a persisted image (e.g. saved path/URL from backend)
+  // so it survives app restarts.
+  File? _profileImage;
+
   @override
   void dispose() {
     _feedbackController.dispose();
@@ -61,12 +68,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _openProfile() {
-    Navigator.of(context).push(
+  Future<void> _openProfile() async {
+    // Pass the currently selected profile picture so the Profile
+    // screen opens already showing it, and wait for whatever image
+    // comes back when the user taps "Save Changes" there.
+    final File? updatedImage = await Navigator.of(context).push<File?>(
       MaterialPageRoute(
-        builder: (_) => ProfileScreen(userName: widget.userName),
+        builder: (_) => ProfileScreen(
+          userName: widget.userName,
+          currentProfileImage: _profileImage,
+        ),
       ),
     );
+
+    // ProfileScreen only pops with a non-null value from inside
+    // _saveProfile (i.e. after tapping "Save Changes"). Pressing the
+    // default back button returns null and is ignored here, so an
+    // existing picture is never accidentally cleared.
+    if (updatedImage != null) {
+      setState(() => _profileImage = updatedImage);
+    }
+  }
+
+  /// Opens the image picker so the user can choose/upload a profile photo.
+  /// The picked image replaces the default avatar icon.
+  Future<void> _pickProfileImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+
+    if (picked != null) {
+      setState(() {
+        _profileImage = File(picked.path);
+      });
+    }
   }
 
   void _logout() {
@@ -99,7 +136,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   _ProfileTile(
                     userName: widget.userName,
+                    profileImage: _profileImage,
                     onTap: _openProfile,
+                    onAvatarTap: _pickProfileImage,
                   ),
                   const SizedBox(height: 15),
 
@@ -372,9 +411,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
 class _ProfileTile extends StatelessWidget {
   final String userName;
+  final File? profileImage;
   final VoidCallback onTap;
+  final VoidCallback onAvatarTap;
 
-  const _ProfileTile({required this.userName, required this.onTap});
+  const _ProfileTile({
+    required this.userName,
+    required this.profileImage,
+    required this.onTap,
+    required this.onAvatarTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -389,10 +435,42 @@ class _ProfileTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 26,
-              backgroundColor: Color(0xFF1F6E8C),
-              child: Icon(Icons.person, color: Colors.white, size: 28),
+            // Tapping the avatar lets the user upload/replace their
+            // profile picture. Once an image is picked, it is shown
+            // here instead of the default placeholder.
+            GestureDetector(
+              onTap: onAvatarTap,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: const Color(0xFF1F6E8C),
+                    backgroundImage:
+                        profileImage != null ? FileImage(profileImage!) : null,
+                    // No fallback person icon anymore — if there's no
+                    // image yet, the circle just stays a plain color
+                    // with a small camera hint below.
+                  ),
+                  if (profileImage == null)
+                    Positioned(
+                      bottom: -2,
+                      right: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add_a_photo_outlined,
+                          size: 14,
+                          color: Color(0xFF1F6E8C),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(width: 14),
             Column(

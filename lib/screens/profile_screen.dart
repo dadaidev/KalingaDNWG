@@ -6,21 +6,27 @@ import 'package:image_picker/image_picker.dart';
 /// Reached from Settings > Profile. Lets the user upload/change their
 /// profile photo, edit their username and password, and view their
 /// My Medication and Appointment History summaries.
+///
+/// When the user taps "Save Changes", the currently selected profile
+/// image is popped back to the caller (Settings screen) so the two
+/// screens stay in sync.
 class ProfileScreen extends StatefulWidget {
   final String userName;
+
+  /// The profile image currently shown on the Settings screen, if any.
+  /// Passed in so this screen starts with the same picture already
+  /// selected instead of resetting to blank every time it's opened.
+  final File? currentProfileImage;
 
   const ProfileScreen({
     super.key,
     required this.userName,
+    this.currentProfileImage,
   });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
@@ -35,6 +41,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const Color kAccentTeal = Color(0xFF2C7A8C);
   static const Color kPageBg = Color(0xFFDCEFF2);
   static const Color kFieldBg = Color(0xFFFFFFFF);
+
+  @override
+  void initState() {
+    super.initState();
+    // Start with whatever picture is already set on the Settings screen.
+    _profileImage = widget.currentProfileImage;
+    _usernameController.text = widget.userName;
+  }
 
   @override
   void dispose() {
@@ -97,6 +111,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Changes saved successfully.')),
     );
+
+    // Send the (possibly new) profile picture back to the Settings
+    // screen so it shows up there immediately, without needing a
+    // shared state manager or backend round-trip.
+    Navigator.of(context).pop(_profileImage);
   }
 
   @override
