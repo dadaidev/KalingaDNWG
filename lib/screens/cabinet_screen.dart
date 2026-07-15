@@ -8,6 +8,7 @@ import 'add_medicine_screen.dart';
 import 'appointment_screen.dart';
 import 'home_page.dart';
 import 'doctor_screen.dart';
+import 'settings_screen.dart';
 
 class CabinetScreen extends StatefulWidget {
   final List<Medicine> initialMedicines;
@@ -31,9 +32,9 @@ class _CabinetScreenState extends State<CabinetScreen> {
   // Cabinet is index 1: Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
   static const int _tabIndex = 1;
 
-  // Appointment, Home, and Doctor all have real screens now, so those
-  // tabs navigate. Settings(4) is TODO until that screen exists.
-  // Uses pushReplacement so the stack stays consistent across all tabs.
+  // Appointment, Home, Doctor, and Settings all have real screens now,
+  // so every tab navigates. Uses pushReplacement so the stack stays
+  // consistent across all tabs (no back-stack pileup between tabs).
   void _onTabTapped(int index) {
     if (index == _tabIndex) return; // already here
 
@@ -59,8 +60,12 @@ class _CabinetScreenState extends State<CabinetScreen> {
           ),
         );
         break;
-      default:
-        // TODO: wire up Settings(4) once that screen exists.
+      case 4:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => SettingsScreen(userName: widget.userName),
+          ),
+        );
         break;
     }
   }

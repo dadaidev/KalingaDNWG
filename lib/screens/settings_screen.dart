@@ -8,6 +8,7 @@ import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
 import 'doctor_screen.dart';
 import 'profile_screen.dart';
+import 'login_screen.dart';
 
 /// Which modal card is currently expanded over the settings list.
 /// `none` means the plain list is shown.
@@ -109,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _logout() {
     // TODO: clear session/tokens here before navigating to your login screen.
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => HomePage(userName: widget.userName)),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
   }

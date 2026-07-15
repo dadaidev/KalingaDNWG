@@ -6,6 +6,7 @@ import '../widgets/bottom_bar.dart';
 import 'cabinet_screen.dart';
 import 'home_page.dart';
 import 'doctor_screen.dart';
+import 'settings_screen.dart';
 
 class AppointmentScreen extends StatefulWidget {
   // Pass the real signed-in user's name when you have it,
@@ -58,10 +59,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     }
   }
 
-  // Cabinet, Home, and Doctor all have real screens now, so those tabs
-  // navigate. Settings(4) is TODO until that screen exists. Uses
-  // pushReplacement so the stack stays consistent across all tabs
-  // (no back-stack pileup between tabs).
+  // Cabinet, Home, Doctor, and Settings all have real screens now, so
+  // every tab navigates. Uses pushReplacement so the stack stays
+  // consistent across all tabs (no back-stack pileup between tabs).
   void _onTabTapped(int index) {
     if (index == _tabIndex) return; // already here
 
@@ -87,8 +87,12 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           ),
         );
         break;
-      default:
-        // TODO: wire up Settings(4) once that screen exists.
+      case 4:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => SettingsScreen(userName: widget.userName),
+          ),
+        );
         break;
     }
   }

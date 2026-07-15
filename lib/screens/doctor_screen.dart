@@ -8,9 +8,7 @@ import 'request_checkup_screen.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
 import 'home_page.dart';
-
-// TODO: replace with a real Settings screen import once available, e.g.:
-// import 'settings_screen.dart';
+import 'settings_screen.dart';
 
 class DoctorScreen extends StatefulWidget {
   final List<Doctor> initialDoctors;
@@ -66,13 +64,15 @@ class _DoctorScreenState extends State<DoctorScreen> {
   void _onTabTapped(int index) {
     if (index == _tabIndex) return;
 
-    // Appointment, Cabinet, and Home now point at the real screens.
-    // Settings stays on _PlaceholderScreen until that screen exists.
+    // All five tabs now point at their real screens. Each tab switch
+    // uses pushReplacement so tapping Appointment from Settings (or
+    // any other tab) lands you back on that tab's own screen instead
+    // of stacking routes on top of each other.
     final Widget destination = switch (index) {
       0 => AppointmentScreen(userName: widget.userName),
       1 => CabinetScreen(userName: widget.userName),
       2 => HomePage(userName: widget.userName),
-      4 => _PlaceholderScreen(label: 'Settings', userName: widget.userName),
+      4 => SettingsScreen(userName: widget.userName),
       _ => HomePage(userName: widget.userName),
     };
 
@@ -335,42 +335,6 @@ class _DeleteConfirmDialog extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Temporary stand-in used ONLY for Settings (index 4), which doesn't have a
-/// real screen yet. Delete this once settings_screen.dart exists, and point
-/// _onTabTapped() at it instead — same as Appointment/Cabinet/Home above.
-class _PlaceholderScreen extends StatelessWidget {
-  final String label;
-  final String userName;
-
-  const _PlaceholderScreen({required this.label, required this.userName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const TopBar(),
-      body: Center(child: Text('$label screen goes here')),
-      bottomNavigationBar: BottomBar(
-        currentIndex: 4,
-        onTap: (index) {
-          if (index == 4) return;
-
-          final Widget destination = switch (index) {
-            0 => AppointmentScreen(userName: userName),
-            1 => CabinetScreen(userName: userName),
-            2 => HomePage(userName: userName),
-            3 => DoctorScreen(userName: userName),
-            _ => HomePage(userName: userName),
-          };
-
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => destination),
-          );
-        },
       ),
     );
   }
