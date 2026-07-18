@@ -4,7 +4,7 @@ import '../widgets/bottom_bar.dart';
 import '../widgets/doctor_card.dart';
 import '../models/doctor.dart';
 import 'doctor_colors.dart';
-import 'request_checkup_screen.dart';
+import 'add_doctor_screen.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
 import 'home_page.dart';
@@ -49,14 +49,12 @@ class _DoctorScreenState extends State<DoctorScreen> {
         name: 'Dr. Jose P. Rizal',
         specialty: 'Surgeon',
         hospital: 'CP Reyes',
-        status: DoctorStatus.active,
       ),
       Doctor(
         id: 'd2',
         name: 'Dr. Jose P. Laurel',
         specialty: 'Surgeon',
         hospital: 'CP Reyes',
-        status: DoctorStatus.inactive,
       ),
     ];
   }
@@ -104,22 +102,23 @@ class _DoctorScreenState extends State<DoctorScreen> {
     });
   }
 
-  Future<void> _openRequestCheckup() async {
-    final result = await Navigator.of(context).push<CheckupRequest>(
-      MaterialPageRoute(builder: (_) => const RequestCheckupScreen()),
+  Future<void> _openAddDoctor() async {
+    final result = await Navigator.of(context).push<AddDoctorResult>(
+      MaterialPageRoute(builder: (_) => const AddDoctorScreen()),
     );
 
-    if (result != null) {
-      // A submitted checkup request doesn't map 1:1 to a new Doctor entry;
-      // hook this up to your actual request/booking logic once it exists.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'CheckUp requested for ${result.fullName} (age ${result.age}).',
-          ),
+    if (result == null) return;
+
+    setState(() {
+      _doctors.add(
+        Doctor(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          name: result.fullName,
+          specialty: result.specialty,
+          hospital: result.hospital,
         ),
       );
-    }
+    });
   }
 
   Future<void> _confirmDelete() async {
@@ -188,7 +187,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                     child: _PillButton(
                       label: 'Add',
                       color: DoctorColors.addGreen,
-                      onPressed: _openRequestCheckup,
+                      onPressed: _openAddDoctor,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -240,7 +239,7 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-        'No doctors added yet.\nTap "Add" to request a check-up.',
+        'No doctors added yet.\nTap "Add" to add your doctor.',
         textAlign: TextAlign.center,
         style: TextStyle(color: DoctorColors.subtitleText, fontSize: 14),
       ),

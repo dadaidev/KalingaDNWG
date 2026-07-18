@@ -4,6 +4,7 @@ import '../widgets/bottom_bar.dart';
 import 'cabinet_colors.dart';
 import 'medicine_card.dart';
 import 'medicine_model.dart';
+import '../services/medication_service.dart';
 import 'add_medicine_screen.dart';
 import 'appointment_screen.dart';
 import 'home_page.dart';
@@ -11,12 +12,10 @@ import 'doctor_screen.dart';
 import 'settings_screen.dart';
 
 class CabinetScreen extends StatefulWidget {
-  final List<Medicine> initialMedicines;
   final String userName; // needed so we can navigate to the other tabs
 
   const CabinetScreen({
     super.key,
-    this.initialMedicines = const [],
     required this.userName,
   });
 
@@ -25,12 +24,44 @@ class CabinetScreen extends StatefulWidget {
 }
 
 class _CabinetScreenState extends State<CabinetScreen> {
-  late List<Medicine> _medicines;
+  final MedicationService _service = MedicationService();
+
+  List<Medicine> _medicines = [];
+  bool _isLoading = true;
+  String? _loadError;
   bool _deleteMode = false;
   final Set<String> _selectedIds = {};
 
   // Cabinet is index 1: Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
   static const int _tabIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMedicines();
+  }
+
+  Future<void> _loadMedicines() async {
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
+
+    try {
+      final medicines = await _service.getMedications();
+      if (!mounted) return;
+      setState(() {
+        _medicines = medicines;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = 'Could not load medicines: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   // Appointment, Home, Doctor, and Settings all have real screens now,
   // so every tab navigates. Uses pushReplacement so the stack stays
@@ -70,20 +101,12 @@ class _CabinetScreenState extends State<CabinetScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _medicines = List.of(widget.initialMedicines);
-  }
-
   void _toggleDeleteMode() {
     setState(() {
       if (_deleteMode) {
-        // Cancel out of selection mode.
         _deleteMode = false;
         _selectedIds.clear();
       } else if (_medicines.isEmpty) {
-        // Nothing to delete.
         return;
       } else {
         _deleteMode = true;
@@ -105,14 +128,15 @@ class _CabinetScreenState extends State<CabinetScreen> {
     final newMedicine = await Navigator.of(context).push<Medicine>(
       MaterialPageRoute(builder: (_) => const AddMedicineScreen()),
     );
+    // AddMedicineScreen already saved it to Supabase before popping;
+    // just reload the list here to reflect the real database state.
     if (newMedicine != null) {
-      setState(() => _medicines.add(newMedicine));
+      _loadMedicines();
     }
   }
 
   Future<void> _confirmDelete() async {
     if (_selectedIds.isEmpty) {
-      // Tapping Delete with nothing selected just cancels selection mode.
       _toggleDeleteMode();
       return;
     }
@@ -123,19 +147,33 @@ class _CabinetScreenState extends State<CabinetScreen> {
       builder: (context) => _DeleteConfirmDialog(count: _selectedIds.length),
     );
 
-    if (confirmed == true) {
+    if (confirmed != true) return;
+
+    final idsToDelete = List<String>.from(_selectedIds);
+
+    try {
+      for (final id in idsToDelete) {
+        await _service.deleteMedication(id);
+      }
+
+      if (!mounted) return;
       setState(() {
-        _medicines.removeWhere((m) => _selectedIds.contains(m.id));
+        _medicines.removeWhere((m) => idsToDelete.contains(m.id));
         _selectedIds.clear();
         _deleteMode = false;
       });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not delete: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const TopBar(), // adjust props if your TopBar constructor needs any
+      appBar: const TopBar(),
       body: Container(
         color: CabinetColors.pageBackground,
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
@@ -152,22 +190,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _medicines.isEmpty
-                  ? const _EmptyState()
-                  : ListView.builder(
-                      itemCount: _medicines.length,
-                      itemBuilder: (context, index) {
-                        final medicine = _medicines[index];
-                        return MedicineCard(
-                          medicine: medicine,
-                          selectionMode: _deleteMode,
-                          selected: _selectedIds.contains(medicine.id),
-                          onTap: _deleteMode
-                              ? () => _toggleSelected(medicine.id)
-                              : null,
-                        );
-                      },
-                    ),
+              child: _buildBody(),
             ),
             const SizedBox(height: 8),
             Row(
@@ -208,6 +231,42 @@ class _CabinetScreenState extends State<CabinetScreen> {
         currentIndex: _tabIndex,
         onTap: _onTabTapped,
       ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_loadError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            _loadError!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: CabinetColors.subtitleText),
+          ),
+        ),
+      );
+    }
+
+    if (_medicines.isEmpty) {
+      return const _EmptyState();
+    }
+
+    return ListView.builder(
+      itemCount: _medicines.length,
+      itemBuilder: (context, index) {
+        final medicine = _medicines[index];
+        return MedicineCard(
+          medicine: medicine,
+          selectionMode: _deleteMode,
+          selected: _selectedIds.contains(medicine.id),
+          onTap: _deleteMode ? () => _toggleSelected(medicine.id) : null,
+        );
+      },
     );
   }
 }

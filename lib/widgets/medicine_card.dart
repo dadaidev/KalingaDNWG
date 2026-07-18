@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../models/medicine_item.dart';
 
+/// Card shown on HomePage's "Today's Medicine" list.
+///
+/// Tapping the card now cycles the underlying log status (see
+/// HomePage._cycleStatus) — Upcoming -> Taken -> Missed -> Skipped -> back
+/// to Upcoming — and persists it via MedicationService.setLogStatus.
 class MedicineCard extends StatelessWidget {
   final MedicineItem item;
+  final VoidCallback? onTap;
 
   const MedicineCard({
     super.key,
     required this.item,
+    this.onTap,
   });
 
   @override
@@ -34,128 +41,137 @@ class MedicineCard extends StatelessWidget {
         badgeText = "Taken";
         badgeIcon = Icons.check;
         break;
+
+      case MedicineStatus.skipped:
+        badgeColor = Colors.orange;
+        badgeText = "Skipped";
+        badgeIcon = Icons.remove_circle_outline;
+        break;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
 
-      decoration: BoxDecoration(
-        color: const Color(0xFFDCEFF7),
-        borderRadius: BorderRadius.circular(18),
-      ),
+        decoration: BoxDecoration(
+          color: const Color(0xFFDCEFF7),
+          borderRadius: BorderRadius.circular(18),
+        ),
 
-      child: Row(
-        children: [
+        child: Row(
+          children: [
 
-          Container(
-            width: 48,
-            height: 48,
+            Container(
+              width: 48,
+              height: 48,
 
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+
+              child: const Icon(
+                Icons.medication,
+                color: Color(0xFF1E6FA8),
+              ),
             ),
 
-            child: const Icon(
-              Icons.medication,
-              color: Color(0xFF1E6FA8),
-            ),
-          ),
+            const SizedBox(width: 15),
 
-          const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    item.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 5),
+                  const SizedBox(height: 5),
 
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 15,
-                      color: Colors.grey,
-                    ),
-
-                    const SizedBox(width: 5),
-
-                    Text(
-                      item.timeLabel,
-                      style: const TextStyle(
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time,
+                        size: 15,
                         color: Colors.grey,
                       ),
-                    ),
-                  ],
-                ),
 
-                const SizedBox(height: 5),
+                      const SizedBox(width: 5),
 
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.medication_outlined,
-                      size: 15,
-                      color: Colors.grey,
-                    ),
+                      Text(
+                        item.timeLabel,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
 
-                    const SizedBox(width: 5),
+                  const SizedBox(height: 5),
 
-                    Text(
-                      item.dosage,
-                      style: const TextStyle(
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.medication_outlined,
+                        size: 15,
                         color: Colors.grey,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
 
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
+                      const SizedBox(width: 5),
 
-            decoration: BoxDecoration(
-              color: badgeColor,
-              borderRadius: BorderRadius.circular(20),
+                      Text(
+                        item.dosage,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
 
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
 
-                Icon(
-                  badgeIcon,
-                  size: 14,
-                  color: Colors.white,
-                ),
+              decoration: BoxDecoration(
+                color: badgeColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
 
-                const SizedBox(width: 5),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
 
-                Text(
-                  badgeText,
-                  style: const TextStyle(
+                  Icon(
+                    badgeIcon,
+                    size: 14,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-              ],
+
+                  const SizedBox(width: 5),
+
+                  Text(
+                    badgeText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

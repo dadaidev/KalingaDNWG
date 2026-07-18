@@ -47,10 +47,24 @@ class Medicine {
   final MedicineType type;
   final String dosage; // e.g. "1pc Only"
   final String purpose;
-  final String frequency; // e.g. "Once a day"
-  final DateTime timeToTake; // date + time of next/scheduled dose
+  final String frequency; // e.g. "Once Daily"
+  final DateTime timeToTake; // schedule start date + time of dose
   final MealTiming meal;
   bool isActive;
+
+  // The real medication_reminders.reminder_id this medicine is tied to.
+  // medication_logs writes back against this id, not medication_id.
+  // It's an integer column in the DB (medication_reminders.reminder_id
+  // is a serial/int PK) -- was previously declared as String? here,
+  // which caused an int -> String? assignment error wherever
+  // MedicationService passed the real int reminder_id in.
+  // Nullable because a hand-built Medicine (e.g. a draft before saving)
+  // won't have one yet.
+  final int? reminderId;
+
+  // medication_reminders.end_date, if the schedule has a cutoff.
+  // Null means "recurs indefinitely" for daily/weekly frequencies.
+  final DateTime? endDate;
 
   Medicine({
     required this.id,
@@ -63,6 +77,8 @@ class Medicine {
     required this.timeToTake,
     required this.meal,
     this.isActive = true,
+    this.reminderId,
+    this.endDate,
   });
 
   Medicine copyWith({
@@ -75,6 +91,8 @@ class Medicine {
     DateTime? timeToTake,
     MealTiming? meal,
     bool? isActive,
+    int? reminderId,
+    DateTime? endDate,
   }) {
     return Medicine(
       id: id,
@@ -87,6 +105,8 @@ class Medicine {
       timeToTake: timeToTake ?? this.timeToTake,
       meal: meal ?? this.meal,
       isActive: isActive ?? this.isActive,
+      reminderId: reminderId ?? this.reminderId,
+      endDate: endDate ?? this.endDate,
     );
   }
 }

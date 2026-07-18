@@ -96,7 +96,15 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(height: 12),
+                      // Back arrow, top-left
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: _darkBlue),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                       // Same logo as login screen
                       Image.asset(
                         'lib/Assets/kalinga.png',

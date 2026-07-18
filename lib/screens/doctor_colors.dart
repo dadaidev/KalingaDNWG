@@ -12,9 +12,6 @@ class DoctorColors {
   static const Color titleText = Color(0xFF1B1B1B);
   static const Color subtitleText = Color(0xFF5A6B70);
 
-  static const Color activeGreen = Color(0xFF3FB86D);
-  static const Color inactiveOrange = Color(0xFFE99A4B);
-
   static const Color addGreen = Color(0xFF3FB86D);
   static const Color deleteRed = Color(0xFFE64545);
   static const Color cancelGrey = Color(0xFF8A9A9E);

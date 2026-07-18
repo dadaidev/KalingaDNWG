@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'sign_up_screen.dart';
 import 'forget_password.dart';
 import 'home_page.dart';
@@ -13,8 +14,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
 
   static const Color _darkBlue = Color(0xFF0D3B66);
   static const Color _fieldFill = Color(0xFFB2F0F2);
@@ -22,30 +25,61 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _onLoginPressed() {
+  Future<void> _onLoginPressed() async {
     final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both username and password')),
+        const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    // TODO: hook this up to your real authentication logic.
-    // Once login is verified (e.g. after an API call returns success),
-    // navigate to the HomePage and clear the login screen from the stack
-    // so the user can't go "back" into it.
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => HomePage(userName: username),
-      ),
-    );
+    setState(() => _isSubmitting = true);
+
+    try {
+      // NOTE: Supabase Auth only authenticates with email + password.
+      // The `username` field is currently collected for display/context
+      // only — it is NOT verified against the database, since
+      // public.users does not have a `username` column yet (it stores
+      // full_name, email, phone, password, created_at). If you want the
+      // username to actually be checked at login, add a `username`
+      // column to public.users and populate it during sign-up, then
+      // query it here after a successful sign-in to confirm it matches.
+      final response = await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      if (response.user != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => HomePage(userName: username),
+          ),
+        );
+      }
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: ${e.message}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Something went wrong: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   void _onForgetPassword() {
@@ -111,6 +145,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: _fieldDecoration('User Name'),
                       ),
                       const SizedBox(height: 16),
+                      // Email field (NEW)
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: _fieldDecoration('Email'),
+                      ),
+                      const SizedBox(height: 16),
                       // Password field
                       TextField(
                         controller: _passwordController,
@@ -155,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _onLoginPressed,
+                          onPressed: _isSubmitting ? null : _onLoginPressed,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _darkBlue,
                             foregroundColor: Colors.white,
@@ -164,14 +205,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             elevation: 4,
                           ),
-                          child: const Text(
-                            'LOG IN',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'LOG IN',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 20),

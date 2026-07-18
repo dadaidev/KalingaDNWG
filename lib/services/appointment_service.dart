@@ -5,13 +5,34 @@ class AppointmentService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
   /// 1. FETCH BOOKING FORM DATA
-  
-  // Fetch patients for the "Select Patient" dropdown
+
+  // Fetch users (patients) for the "Select Patient" dropdown.
+  // NOTE: the old `patients` table was merged into `users` — the
+  // primary key here is `user_id`, not `id`.
   Future<List<Map<String, dynamic>>> getPatients() async {
     final data = await _supabase
-        .from('patients')
-        .select('id, full_name');
+        .from('users')
+        .select('user_id, full_name');
     return List<Map<String, dynamic>>.from(data);
+  }
+
+  // Resolves the signed-in user's own patient/user id, for screens that
+  // show "my appointments" rather than letting the user pick a patient
+  // from a dropdown. Returns null if either nobody is signed in, or the
+  // signed-in auth user has no matching row in public.users — which can
+  // happen if the on_auth_user_created trigger ever failed to fire for
+  // an older account created before that trigger existed.
+  Future<String?> getCurrentPatientId() async {
+    final authUser = _supabase.auth.currentUser;
+    if (authUser == null) return null;
+
+    final row = await _supabase
+        .from('users')
+        .select('user_id')
+        .eq('user_id', authUser.id)
+        .maybeSingle();
+
+    return row?['user_id'] as String?;
   }
 
   // Fetch unique doctor specialties for the "Select Specialty" dropdown
@@ -19,7 +40,7 @@ class AppointmentService {
     final List<dynamic> data = await _supabase
         .from('doctors')
         .select('specialty');
-    
+
     // Extract strings and remove duplicates safely
     final specialties = data
         .where((d) => d['specialty'] != null)
@@ -27,6 +48,31 @@ class AppointmentService {
         .toSet()
         .toList();
     return specialties;
+  }
+
+  // Fetch every date that currently has at least one available_slots row
+  // AND is today or later, sorted ascending. Past dates are excluded —
+  // even though they still technically have slot rows in the DB, they're
+  // not bookable, so showing them would let someone select a dead date.
+  Future<List<DateTime>> getAvailableDates() async {
+    final today = DateTime.now();
+    final todayDateOnly = DateTime(today.year, today.month, today.day);
+    final todayStr =
+        '${todayDateOnly.year}-${todayDateOnly.month.toString().padLeft(2, '0')}-${todayDateOnly.day.toString().padLeft(2, '0')}';
+
+    final data = await _supabase
+        .from('available_slots')
+        .select('date')
+        .gte('date', todayStr)
+        .order('date', ascending: true);
+
+    final dates = <DateTime>{};
+    for (final row in List<Map<String, dynamic>>.from(data)) {
+      final dateStr = row['date'] as String?;
+      if (dateStr != null) dates.add(DateTime.parse(dateStr));
+    }
+    final sorted = dates.toList()..sort();
+    return sorted;
   }
 
   // Fetch doctors along with their available slots based on specialty and date
@@ -40,11 +86,14 @@ class AppointmentService {
         ''')
         .eq('specialty', specialty)
         .eq('available_slots.date', dateString);
-        
+
     return List<Map<String, dynamic>>.from(data);
   }
 
   /// 2. CONFIRM BOOKING ACTION
+  // NOTE: `appointments.patient_id` still has that column name, but it now
+  // references `users.user_id` (the signed-in user's auth id), not the old
+  // `patients.id`.
   Future<void> confirmBooking({
     required String patientId,
     required String doctorId,
@@ -55,8 +104,8 @@ class AppointmentService {
     await _supabase.from('appointments').insert({
       'patient_id': patientId,
       'doctor_id': doctorId,
-      'date': date, 
-      'time_slot': timeSlot, 
+      'date': date,
+      'time_slot': timeSlot,
       'reason': reason ?? '',
       'status': 'Upcoming',
     });

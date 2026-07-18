@@ -18,8 +18,6 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = doctor.status == DoctorStatus.active;
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -70,27 +68,6 @@ class DoctorCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 11,
                       color: DoctorColors.subtitleText,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? DoctorColors.activeGreen
-                          : DoctorColors.inactiveOrange,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      isActive ? 'Active' : 'Inactive',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
                     ),
                   ),
                 ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
+import '../services/medication_service.dart';
 import 'home_page.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
@@ -31,8 +32,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final TextEditingController _feedbackController = TextEditingController();
 
-  // TODO: replace with real medication history data from your storage/API.
-  final List<Map<String, String>> _medicationHistory = [];
+  final MedicationService _medicationService = MedicationService();
+  // Set fresh each time the Medication History modal is opened, so it
+  // always reflects doses taken since the screen was last shown.
+  Future<List<Map<String, String>>>? _medicationHistoryFuture;
 
   // Holds the profile picture picked/uploaded by the user.
   // TODO: replace with a persisted image (e.g. saved path/URL from backend)
@@ -46,6 +49,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _openModal(_SettingsModal modal) {
+    if (modal == _SettingsModal.medicationHistory) {
+      _medicationHistoryFuture = _medicationService.getMedicationHistory();
+    }
     setState(() => _activeModal = modal);
   }
 
@@ -202,37 +208,104 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onClose: _closeModal,
           child: SizedBox(
             height: 320,
-            child: _medicationHistory.isEmpty
-                ? Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      "No medication history yet.",
-                      style: TextStyle(color: Colors.black45),
-                    ),
-                  )
-                : Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: ListView.separated(
-                      itemCount: _medicationHistory.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final item = _medicationHistory[index];
-                        return ListTile(
-                          dense: true,
-                          title: Text(item["name"] ?? ""),
-                          subtitle: Text(item["date"] ?? ""),
-                        );
-                      },
-                    ),
-                  ),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: FutureBuilder<List<Map<String, String>>>(
+                future: _medicationHistoryFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          "Could not load history: ${snapshot.error}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.black45),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final history = snapshot.data ?? [];
+
+                  if (history.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No medication history yet.",
+                        style: TextStyle(color: Colors.black45),
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    itemCount: history.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final item = history[index];
+                      final status = item["status"] ?? "";
+
+                      late final Color statusColor;
+                      late final IconData statusIcon;
+                      late final String statusLabel;
+                      switch (status) {
+                        case 'Taken':
+                          statusColor = const Color(0xFF3FB86D);
+                          statusIcon = Icons.check_circle;
+                          statusLabel = 'Taken';
+                          break;
+                        case 'Missed':
+                          statusColor = const Color(0xFFE64545);
+                          statusIcon = Icons.cancel;
+                          statusLabel = 'Missed';
+                          break;
+                        case 'Skipped':
+                          statusColor = const Color(0xFFE99A4B);
+                          statusIcon = Icons.remove_circle;
+                          statusLabel = 'Skipped';
+                          break;
+                        default:
+                          statusColor = Colors.black38;
+                          statusIcon = Icons.help_outline;
+                          statusLabel = status.isEmpty ? 'Unknown' : status;
+                      }
+
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(statusIcon, color: statusColor, size: 20),
+                        title: Text(item["name"] ?? ""),
+                        subtitle: Text(item["date"] ?? ""),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
           ),
         );
         break;
