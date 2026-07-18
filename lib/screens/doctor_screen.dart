@@ -3,6 +3,7 @@ import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
 import '../widgets/doctor_card.dart';
 import '../models/doctor.dart';
+import '../services/doctor_service.dart';
 import 'doctor_colors.dart';
 import 'add_doctor_screen.dart';
 import 'appointment_screen.dart';
@@ -11,12 +12,10 @@ import 'home_page.dart';
 import 'settings_screen.dart';
 
 class DoctorScreen extends StatefulWidget {
-  final List<Doctor> initialDoctors;
   final String userName; // needed to navigate back to Home/Cabinet
 
   const DoctorScreen({
     super.key,
-    this.initialDoctors = const [],
     required this.userName,
   });
 
@@ -25,7 +24,11 @@ class DoctorScreen extends StatefulWidget {
 }
 
 class _DoctorScreenState extends State<DoctorScreen> {
-  late List<Doctor> _doctors;
+  final DoctorService _service = DoctorService();
+
+  List<Doctor> _doctors = [];
+  bool _isLoading = true;
+  String? _loadError;
   bool _deleteMode = false;
   final Set<String> _selectedIds = {};
 
@@ -35,28 +38,29 @@ class _DoctorScreenState extends State<DoctorScreen> {
   @override
   void initState() {
     super.initState();
-    _doctors = _initialSeed(widget.initialDoctors);
+    _loadDoctors();
   }
 
-  // Seeds the two doctors from the mockup if nothing was passed in, so the
-  // screen matches the design out of the box. Remove this once real data
-  // is wired up.
-  List<Doctor> _initialSeed(List<Doctor> provided) {
-    if (provided.isNotEmpty) return List.of(provided);
-    return [
-      Doctor(
-        id: 'd1',
-        name: 'Dr. Jose P. Rizal',
-        specialty: 'Surgeon',
-        hospital: 'CP Reyes',
-      ),
-      Doctor(
-        id: 'd2',
-        name: 'Dr. Jose P. Laurel',
-        specialty: 'Surgeon',
-        hospital: 'CP Reyes',
-      ),
-    ];
+  Future<void> _loadDoctors() async {
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
+
+    try {
+      final doctors = await _service.getMyDoctors();
+      if (!mounted) return;
+      setState(() {
+        _doctors = doctors;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = 'Could not load doctors: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   void _onTabTapped(int index) {
@@ -109,16 +113,22 @@ class _DoctorScreenState extends State<DoctorScreen> {
 
     if (result == null) return;
 
-    setState(() {
-      _doctors.add(
-        Doctor(
-          id: DateTime.now().microsecondsSinceEpoch.toString(),
-          name: result.fullName,
-          specialty: result.specialty,
-          hospital: result.hospital,
-        ),
+    try {
+      await _service.addDoctor(
+        fullName: result.fullName,
+        specialty: result.specialty,
+        hospital: result.hospital,
       );
-    });
+      // Reload from Supabase rather than appending locally, so the list
+      // reflects the real saved state (and the real database id) instead
+      // of a client-only guess.
+      await _loadDoctors();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save doctor: $e')),
+      );
+    }
   }
 
   Future<void> _confirmDelete() async {
@@ -133,12 +143,26 @@ class _DoctorScreenState extends State<DoctorScreen> {
       builder: (context) => _DeleteConfirmDialog(count: _selectedIds.length),
     );
 
-    if (confirmed == true) {
+    if (confirmed != true) return;
+
+    final idsToDelete = List<String>.from(_selectedIds);
+
+    try {
+      for (final id in idsToDelete) {
+        await _service.deleteDoctor(id);
+      }
+
+      if (!mounted) return;
       setState(() {
-        _doctors.removeWhere((d) => _selectedIds.contains(d.id));
+        _doctors.removeWhere((d) => idsToDelete.contains(d.id));
         _selectedIds.clear();
         _deleteMode = false;
       });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not delete: $e')),
+      );
     }
   }
 
@@ -162,22 +186,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _doctors.isEmpty
-                  ? const _EmptyState()
-                  : ListView.builder(
-                      itemCount: _doctors.length,
-                      itemBuilder: (context, index) {
-                        final doctor = _doctors[index];
-                        return DoctorCard(
-                          doctor: doctor,
-                          selectionMode: _deleteMode,
-                          selected: _selectedIds.contains(doctor.id),
-                          onTap: _deleteMode
-                              ? () => _toggleSelected(doctor.id)
-                              : null,
-                        );
-                      },
-                    ),
+              child: _buildBody(),
             ),
             const SizedBox(height: 8),
             if (!_deleteMode)
@@ -228,6 +237,42 @@ class _DoctorScreenState extends State<DoctorScreen> {
         currentIndex: _tabIndex,
         onTap: _onTabTapped,
       ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_loadError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            _loadError!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: DoctorColors.subtitleText),
+          ),
+        ),
+      );
+    }
+
+    if (_doctors.isEmpty) {
+      return const _EmptyState();
+    }
+
+    return ListView.builder(
+      itemCount: _doctors.length,
+      itemBuilder: (context, index) {
+        final doctor = _doctors[index];
+        return DoctorCard(
+          doctor: doctor,
+          selectionMode: _deleteMode,
+          selected: _selectedIds.contains(doctor.id),
+          onTap: _deleteMode ? () => _toggleSelected(doctor.id) : null,
+        );
+      },
     );
   }
 }
