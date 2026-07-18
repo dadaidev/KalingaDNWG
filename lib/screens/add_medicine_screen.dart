@@ -3,12 +3,6 @@ import 'cabinet_colors.dart';
 import 'medicine_model.dart';
 import '../services/medication_service.dart';
 
-/// "Add Medicine" form screen.
-///
-/// Wrapped in its own Scaffold so TextFormField/DropdownButton/etc. have a
-/// proper Material ancestor. Push this with Navigator and it returns a
-/// [Medicine] via Navigator.pop when the user taps Add/Save (after it has
-/// actually been saved to Supabase), or null when they Cancel.
 class AddMedicineScreen extends StatefulWidget {
   final Medicine? existing; // pass in to edit, leave null to create new
 
@@ -22,9 +16,6 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   final _formKey = GlobalKey<FormState>();
   final MedicationService _service = MedicationService();
 
-  // The database's medication_reminders.frequency column has a CHECK
-  // constraint that only accepts these exact strings -- keep this list
-  // in sync with that constraint if it ever changes.
   static const List<String> _frequencyOptions = [
     'Once Daily',
     'Twice Daily',
@@ -43,9 +34,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   DateTime? _timeToTake;
   MealTiming _meal = MealTiming.after;
   String? _frequency;
-  // Optional cutoff date for the recurring schedule. Null means "runs
-  // indefinitely", which is also the previous behavior before this field
-  // existed (medication_reminders.end_date stayed null for every row).
+
   DateTime? _endDate;
   bool _isSubmitting = false;
 
@@ -61,8 +50,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
     _timeToTake = e?.timeToTake;
     _meal = e?.meal ?? MealTiming.after;
     _endDate = e?.endDate;
-    // Only pre-select if the existing value is one of the valid options
-    // (older/legacy data may hold a free-text value that no longer matches).
+
     _frequency = _frequencyOptions.contains(e?.frequency) ? e!.frequency : null;
   }
 
@@ -92,7 +80,13 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
     if (time == null) return;
 
     setState(() {
-      _timeToTake = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _timeToTake = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
     });
   }
 
@@ -120,7 +114,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
     if (_type == null || _timeToTake == null || _frequency == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in Medicine Type, Frequency, and Time to Take.'),
+          content: Text(
+            'Please fill in Medicine Type, Frequency, and Time to Take.',
+          ),
         ),
       );
       return;
@@ -149,11 +145,8 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       Medicine savedMedicine;
 
       if (widget.existing == null) {
-        // Create: insert into medications + medication_reminders,
-        // get back the real database id.
         savedMedicine = await _service.addMedication(draftMedicine);
       } else {
-        // Edit: update both tables for the existing medication_id.
         await _service.updateMedication(draftMedicine);
         savedMedicine = draftMedicine;
       }
@@ -162,9 +155,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
       Navigator.of(context).pop(savedMedicine);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save medicine: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not save medicine: $e')));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -205,8 +198,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                           _FieldLabel('Medicine Name'),
                           _TextInput(
                             controller: _nameCtrl,
-                            validator: (v) =>
-                                (v == null || v.trim().isEmpty) ? 'Required' : null,
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
                           ),
                           const SizedBox(height: 12),
                           _FieldLabel('Generic Name'),
@@ -225,7 +219,11 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                           ),
                           const SizedBox(height: 12),
                           _FieldLabel('Purpose/Condition'),
-                          _TextInput(controller: _purposeCtrl, minLines: 3, maxLines: 5),
+                          _TextInput(
+                            controller: _purposeCtrl,
+                            minLines: 3,
+                            maxLines: 5,
+                          ),
                           const SizedBox(height: 12),
                           _FieldLabel('Frequency'),
                           _FrequencyDropdown(
@@ -235,7 +233,10 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                           ),
                           const SizedBox(height: 12),
                           _FieldLabel('Time to Take'),
-                          _TimePickerField(value: _timeToTake, onTap: _pickTime),
+                          _TimePickerField(
+                            value: _timeToTake,
+                            onTap: _pickTime,
+                          ),
                           const SizedBox(height: 12),
                           _FieldLabel('End Date (optional)'),
                           _EndDatePickerField(
@@ -260,15 +261,17 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                                     _MealRadio(
                                       label: 'Before',
                                       selected: _meal == MealTiming.before,
-                                      onTap: () =>
-                                          setState(() => _meal = MealTiming.before),
+                                      onTap: () => setState(
+                                        () => _meal = MealTiming.before,
+                                      ),
                                     ),
                                     const SizedBox(width: 24),
                                     _MealRadio(
                                       label: 'After',
                                       selected: _meal == MealTiming.after,
-                                      onTap: () =>
-                                          setState(() => _meal = MealTiming.after),
+                                      onTap: () => setState(
+                                        () => _meal = MealTiming.after,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -297,7 +300,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     child: _PillButton(
                       label: 'Cancel',
                       color: CabinetColors.deleteRed,
-                      onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.of(context).pop(),
                     ),
                   ),
                 ],
@@ -356,7 +361,10 @@ class _TextInput extends StatelessWidget {
         hintText: hint,
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -440,7 +448,7 @@ class _TimePickerField extends StatelessWidget {
     final label = value == null
         ? 'Select date & time'
         : '${TimeOfDay.fromDateTime(value!).format(context)}, '
-            '${value!.month}/${value!.day}/${value!.year}';
+              '${value!.month}/${value!.day}/${value!.year}';
 
     return InkWell(
       onTap: onTap,
@@ -454,7 +462,11 @@ class _TimePickerField extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.access_time, size: 18, color: CabinetColors.subtitleText),
+            const Icon(
+              Icons.access_time,
+              size: 18,
+              color: CabinetColors.subtitleText,
+            ),
             const SizedBox(width: 8),
             Text(label, style: const TextStyle(color: CabinetColors.titleText)),
           ],
@@ -464,9 +476,6 @@ class _TimePickerField extends StatelessWidget {
   }
 }
 
-/// Optional cutoff date for the recurring schedule. Shows "No end date"
-/// when unset (the schedule then recurs indefinitely), with a small
-/// clear (x) button once a date has been picked.
 class _EndDatePickerField extends StatelessWidget {
   final DateTime? value;
   final VoidCallback onTap;
@@ -496,15 +505,26 @@ class _EndDatePickerField extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.event_busy, size: 18, color: CabinetColors.subtitleText),
+            const Icon(
+              Icons.event_busy,
+              size: 18,
+              color: CabinetColors.subtitleText,
+            ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(label, style: const TextStyle(color: CabinetColors.titleText)),
+              child: Text(
+                label,
+                style: const TextStyle(color: CabinetColors.titleText),
+              ),
             ),
             if (onClear != null)
               InkWell(
                 onTap: onClear,
-                child: const Icon(Icons.close, size: 18, color: CabinetColors.subtitleText),
+                child: const Icon(
+                  Icons.close,
+                  size: 18,
+                  color: CabinetColors.subtitleText,
+                ),
               ),
           ],
         ),
@@ -566,9 +586,7 @@ class _PillButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         elevation: 0,
       ),
       child: isLoading

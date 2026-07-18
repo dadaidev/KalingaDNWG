@@ -7,7 +7,13 @@ class Doctor {
   final double rating;
   final String hospital;
 
-  Doctor({required this.id, required this.fullName, required this.specialty, required this.rating, required this.hospital});
+  Doctor({
+    required this.id,
+    required this.fullName,
+    required this.specialty,
+    required this.rating,
+    required this.hospital,
+  });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
@@ -24,11 +30,18 @@ class Appointment {
   final String id;
   final String date;
   final String timeSlot;
-  final String status; // 'Upcoming', 'Done', 'Cancelled'
+  final String status;
   final String? reason;
   final Doctor? doctor;
 
-  Appointment({required this.id, required this.date, required this.timeSlot, required this.status, this.reason, this.doctor});
+  Appointment({
+    required this.id,
+    required this.date,
+    required this.timeSlot,
+    required this.status,
+    this.reason,
+    this.doctor,
+  });
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
     return Appointment(

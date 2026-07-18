@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
-import '../services/medication_service.dart';
 import 'home_page.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
@@ -11,8 +11,6 @@ import 'doctor_screen.dart';
 import 'profile_screen.dart';
 import 'login_screen.dart';
 
-/// Which modal card is currently expanded over the settings list.
-/// `none` means the plain list is shown.
 enum _SettingsModal { none, medicationHistory, about, feedback, logout }
 
 class SettingsScreen extends StatefulWidget {
@@ -25,21 +23,15 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
   static const int _tabIndex = 4;
 
   _SettingsModal _activeModal = _SettingsModal.none;
 
   final TextEditingController _feedbackController = TextEditingController();
+  bool _isSubmittingFeedback = false;
 
-  final MedicationService _medicationService = MedicationService();
-  // Set fresh each time the Medication History modal is opened, so it
-  // always reflects doses taken since the screen was last shown.
-  Future<List<Map<String, String>>>? _medicationHistoryFuture;
+  final List<Map<String, String>> _medicationHistory = [];
 
-  // Holds the profile picture picked/uploaded by the user.
-  // TODO: replace with a persisted image (e.g. saved path/URL from backend)
-  // so it survives app restarts.
   File? _profileImage;
 
   @override
@@ -49,9 +41,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _openModal(_SettingsModal modal) {
-    if (modal == _SettingsModal.medicationHistory) {
-      _medicationHistoryFuture = _medicationService.getMedicationHistory();
-    }
     setState(() => _activeModal = modal);
   }
 
@@ -70,15 +59,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _ => SettingsScreen(userName: widget.userName),
     };
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => destination),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
   }
 
   Future<void> _openProfile() async {
-    // Pass the currently selected profile picture so the Profile
-    // screen opens already showing it, and wait for whatever image
-    // comes back when the user taps "Save Changes" there.
     final File? updatedImage = await Navigator.of(context).push<File?>(
       MaterialPageRoute(
         builder: (_) => ProfileScreen(
@@ -88,17 +74,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
 
-    // ProfileScreen only pops with a non-null value from inside
-    // _saveProfile (i.e. after tapping "Save Changes"). Pressing the
-    // default back button returns null and is ignored here, so an
-    // existing picture is never accidentally cleared.
     if (updatedImage != null) {
       setState(() => _profileImage = updatedImage);
     }
   }
 
-  /// Opens the image picker so the user can choose/upload a profile photo.
-  /// The picked image replaces the default avatar icon.
   Future<void> _pickProfileImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? picked = await picker.pickImage(
@@ -113,8 +93,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _submitFeedback() async {
+    final message = _feedbackController.text.trim();
+    if (message.isEmpty) return;
+
+    setState(() => _isSubmittingFeedback = true);
+
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+
+      if (userId == null) {
+        throw Exception("You must be logged in to submit feedback.");
+      }
+
+      await supabase.from('feedback').insert({
+        'user_id': userId,
+        'message': message,
+      });
+
+      _feedbackController.clear();
+      if (mounted) {
+        _closeModal();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Thank you for your feedback!")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to submit feedback: $e")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmittingFeedback = false);
+    }
+  }
+
   void _logout() {
-    // TODO: clear session/tokens here before navigating to your login screen.
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
@@ -179,7 +195,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
-            // --- Scrim + modal overlay ---
             if (_activeModal != _SettingsModal.none) ...[
               GestureDetector(
                 onTap: _closeModal,
@@ -208,104 +223,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onClose: _closeModal,
           child: SizedBox(
             height: 320,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: FutureBuilder<List<Map<String, String>>>(
-                future: _medicationHistoryFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(
-                          "Could not load history: ${snapshot.error}",
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.black45),
-                        ),
-                      ),
-                    );
-                  }
-
-                  final history = snapshot.data ?? [];
-
-                  if (history.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        "No medication history yet.",
-                        style: TextStyle(color: Colors.black45),
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
-                    itemCount: history.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final item = history[index];
-                      final status = item["status"] ?? "";
-
-                      late final Color statusColor;
-                      late final IconData statusIcon;
-                      late final String statusLabel;
-                      switch (status) {
-                        case 'Taken':
-                          statusColor = const Color(0xFF3FB86D);
-                          statusIcon = Icons.check_circle;
-                          statusLabel = 'Taken';
-                          break;
-                        case 'Missed':
-                          statusColor = const Color(0xFFE64545);
-                          statusIcon = Icons.cancel;
-                          statusLabel = 'Missed';
-                          break;
-                        case 'Skipped':
-                          statusColor = const Color(0xFFE99A4B);
-                          statusIcon = Icons.remove_circle;
-                          statusLabel = 'Skipped';
-                          break;
-                        default:
-                          statusColor = Colors.black38;
-                          statusIcon = Icons.help_outline;
-                          statusLabel = status.isEmpty ? 'Unknown' : status;
-                      }
-
-                      return ListTile(
-                        dense: true,
-                        leading: Icon(statusIcon, color: statusColor, size: 20),
-                        title: Text(item["name"] ?? ""),
-                        subtitle: Text(item["date"] ?? ""),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
+            child: _medicationHistory.isEmpty
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "No medication history yet.",
+                      style: TextStyle(color: Colors.black45),
+                    ),
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: ListView.separated(
+                      itemCount: _medicationHistory.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final item = _medicationHistory[index];
+                        return ListTile(
+                          dense: true,
+                          title: Text(item["name"] ?? ""),
+                          subtitle: Text(item["date"] ?? ""),
+                        );
+                      },
+                    ),
+                  ),
           ),
         );
         break;
@@ -380,7 +328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: _feedbackController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: "You can write your feedback's here",
+                  hintText: "You can write your feedback here",
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -392,11 +340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 14),
               ElevatedButton(
-                onPressed: () {
-                  // TODO: send _feedbackController.text to your backend.
-                  _feedbackController.clear();
-                  _closeModal();
-                },
+                onPressed: _isSubmittingFeedback ? null : _submitFeedback,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1F6E8C),
                   foregroundColor: Colors.white,
@@ -405,7 +349,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text("Submit"),
+                child: _isSubmittingFeedback
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("Submit"),
               ),
             ],
           ),
@@ -509,9 +462,6 @@ class _ProfileTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Tapping the avatar lets the user upload/replace their
-            // profile picture. Once an image is picked, it is shown
-            // here instead of the default placeholder.
             GestureDetector(
               onTap: onAvatarTap,
               child: Stack(
@@ -520,11 +470,9 @@ class _ProfileTile extends StatelessWidget {
                   CircleAvatar(
                     radius: 26,
                     backgroundColor: const Color(0xFF1F6E8C),
-                    backgroundImage:
-                        profileImage != null ? FileImage(profileImage!) : null,
-                    // No fallback person icon anymore — if there's no
-                    // image yet, the circle just stays a plain color
-                    // with a small camera hint below.
+                    backgroundImage: profileImage != null
+                        ? FileImage(profileImage!)
+                        : null,
                   ),
                   if (profileImage == null)
                     Positioned(
@@ -552,11 +500,17 @@ class _ProfileTile extends StatelessWidget {
               children: [
                 const Text(
                   "Profile",
-                  style: TextStyle(color: Colors.black54, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
                 Text(
                   userName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -627,7 +581,11 @@ class _ModalCard extends StatelessWidget {
           color: const Color(0xFFCFE6EC),
           borderRadius: BorderRadius.circular(20),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, 6)),
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
           ],
         ),
         child: Column(
@@ -641,12 +599,19 @@ class _ModalCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 InkWell(
                   onTap: onClose,
-                  child: const Icon(Icons.close, size: 20, color: Colors.black45),
+                  child: const Icon(
+                    Icons.close,
+                    size: 20,
+                    color: Colors.black45,
+                  ),
                 ),
               ],
             ),

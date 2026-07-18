@@ -3,7 +3,6 @@ import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
 import 'doctor_colors.dart';
 
-/// Result returned when the user taps "Add" on the Add My Doctor form.
 class AddDoctorResult {
   final String fullName;
   final String specialty;
@@ -16,10 +15,6 @@ class AddDoctorResult {
   });
 }
 
-/// Simple "add a doctor to my list" form -- just the doctor's name and
-/// specialty. This replaced the old checkup-request form, which asked for
-/// unrelated fields (address, age, purpose) that don't belong on a
-/// personal doctor list.
 class AddDoctorScreen extends StatefulWidget {
   const AddDoctorScreen({super.key});
 
@@ -33,8 +28,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
   final _specialtyController = TextEditingController();
   final _hospitalController = TextEditingController();
 
-  // Doctor tab index, kept consistent with the rest of the app's BottomBar:
-  // Appointment(0), Cabinet(1), Home(2), Doctor(3), Setting(4)
   static const int _tabIndex = 3;
 
   @override
@@ -73,14 +66,14 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
       hintStyle: const TextStyle(color: DoctorColors.subtitleText),
       filled: true,
       fillColor: DoctorColors.inputFill,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 12,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: border,
       enabledBorder: border,
       focusedBorder: border.copyWith(
-        borderSide: const BorderSide(color: DoctorColors.dialogTeal, width: 1.5),
+        borderSide: const BorderSide(
+          color: DoctorColors.dialogTeal,
+          width: 1.5,
+        ),
       ),
       errorBorder: border.copyWith(
         borderSide: const BorderSide(color: DoctorColors.deleteRed, width: 1),
@@ -124,9 +117,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           label: 'Full Name',
                           child: TextFormField(
                             controller: _nameController,
-                            decoration: _fieldDecoration(hint: "e.g. Dr. Jose P. Rizal"),
-                            validator: (value) => (value == null ||
-                                    value.trim().isEmpty)
+                            decoration: _fieldDecoration(
+                              hint: "e.g. Dr. Jose P. Rizal",
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
                                 ? 'Required'
                                 : null,
                           ),
@@ -136,9 +131,11 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           label: 'Specialty',
                           child: TextFormField(
                             controller: _specialtyController,
-                            decoration: _fieldDecoration(hint: "e.g. Cardiologist"),
-                            validator: (value) => (value == null ||
-                                    value.trim().isEmpty)
+                            decoration: _fieldDecoration(
+                              hint: "e.g. Cardiologist",
+                            ),
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
                                 ? 'Required'
                                 : null,
                           ),
@@ -149,8 +146,8 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                           child: TextFormField(
                             controller: _hospitalController,
                             decoration: _fieldDecoration(hint: "e.g. CP Reyes"),
-                            validator: (value) => (value == null ||
-                                    value.trim().isEmpty)
+                            validator: (value) =>
+                                (value == null || value.trim().isEmpty)
                                 ? 'Required'
                                 : null,
                           ),
@@ -229,9 +226,7 @@ class _PillButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         elevation: 0,
       ),
       child: Text(

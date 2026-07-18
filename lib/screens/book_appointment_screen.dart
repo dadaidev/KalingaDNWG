@@ -13,11 +13,27 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   final AppointmentService _service = AppointmentService();
 
   static const List<String> _monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   static const List<String> _weekdayNames = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
   ];
 
   // Selected State Variables
@@ -26,12 +42,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   String? _selectedDoctorId;
   String? _selectedTimeSlot;
 
-  // No hardcoded default anymore — this is set to the first real date
-  // that actually has available_slots rows, once _loadInitialFormData
-  // fetches them. Null until then (or if there are none at all).
   DateTime? _selectedDate;
 
-  // Text controller for optional visit description
   final TextEditingController _reasonController = TextEditingController();
 
   // UI Data Holders
@@ -41,8 +53,6 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   bool _isLoadingDoctors = false;
   bool _isLoadingForm = true;
 
-  // Every date that currently has at least one available_slots row,
-  // fetched from the real database instead of a hardcoded date range.
   List<DateTime> _availableDates = [];
 
   @override
@@ -51,12 +61,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     _loadInitialFormData();
   }
 
-  // FIXED: Correct asynchronous ordering sequence
   Future<void> _loadInitialFormData() async {
-    // DIAGNOSTIC: check whether the client has an authenticated session.
-    // If this prints "Session: null", the app is calling Supabase as the
-    // anon role, which is why any RLS policy scoped to "authenticated"
-    // (e.g. on users/doctors) silently returns empty lists here.
     print('Session: ${Supabase.instance.client.auth.currentSession}');
 
     setState(() => _isLoadingForm = true);
@@ -71,25 +76,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         _specialties = specialtiesData;
         _availableDates = availableDates;
 
-        // 1. Assign default patient selection if array contains records.
-        // `users` table's primary key is `user_id`, not `id`.
         if (_patients.isNotEmpty) {
           _selectedPatientId = _patients.first['user_id']?.toString();
         }
 
-        // 2. Assign default active specialty filtering string BEFORE invoking lookups
         if (_specialties.isNotEmpty) {
           _selectedSpecialty = _specialties.first;
         }
 
-        // 3. Default to the earliest date that actually has availability,
-        // instead of a hardcoded date that may not exist in the DB.
-        _selectedDate = _availableDates.isNotEmpty ? _availableDates.first : null;
+        _selectedDate = _availableDates.isNotEmpty
+            ? _availableDates.first
+            : null;
 
         _isLoadingForm = false;
       });
 
-      // 4. Fire database query only after variables are verified as assigned
       if (_selectedSpecialty != null && _selectedDate != null) {
         _fetchAvailableDoctors();
       }
@@ -111,7 +112,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
     try {
       final formattedDate = _dateString(_selectedDate!);
-      final doctorsData = await _service.getDoctorsWithSlots(_selectedSpecialty!, formattedDate);
+      final doctorsData = await _service.getDoctorsWithSlots(
+        _selectedSpecialty!,
+        formattedDate,
+      );
 
       setState(() {
         _doctorsWithSlots = doctorsData;
@@ -129,7 +133,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}";
 
   void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _handleBookingSubmission() async {
@@ -137,7 +143,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         _selectedDoctorId == null ||
         _selectedTimeSlot == null ||
         _selectedDate == null) {
-      _showSnackbar('Please pick a Patient, Date, Doctor, and specific Time Slot.');
+      _showSnackbar(
+        'Please pick a Patient, Date, Doctor, and specific Time Slot.',
+      );
       return;
     }
 
@@ -175,7 +183,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         iconTheme: const IconThemeData(color: Color(0xFF1E3A5F)),
         title: const Text(
           'Book Appointment',
-          style: TextStyle(color: Color(0xFF1E3A5F), fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Color(0xFF1E3A5F),
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: _isLoadingForm
@@ -186,13 +197,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // SELECT PATIENT DROP-DOWN
-                  const Text('Select Patient:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text(
+                    'Select Patient:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     value: _selectedPatientId,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                     ),
                     items: _patients.map((p) {
                       return DropdownMenuItem<String>(
@@ -200,12 +219,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                         child: Text(p['full_name'] ?? 'Unknown'),
                       );
                     }).toList(),
-                    onChanged: (val) => setState(() => _selectedPatientId = val),
+                    onChanged: (val) =>
+                        setState(() => _selectedPatientId = val),
                   ),
 
                   const SizedBox(height: 16),
 
-                  const Text('Select Date:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text(
+                    'Select Date:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   const SizedBox(height: 6),
 
                   if (_availableDates.isEmpty)
@@ -217,8 +240,6 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       ),
                     )
                   else ...[
-                    // TIMELINE MATRIX BUILDER — built from real available_slots
-                    // dates instead of a hardcoded week.
                     SizedBox(
                       height: 75,
                       child: ListView.builder(
@@ -226,11 +247,13 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                         itemCount: _availableDates.length,
                         itemBuilder: (context, index) {
                           final currentDay = _availableDates[index];
-                          final isSelected = _selectedDate != null &&
+                          final isSelected =
+                              _selectedDate != null &&
                               currentDay.year == _selectedDate!.year &&
                               currentDay.month == _selectedDate!.month &&
                               currentDay.day == _selectedDate!.day;
-                          final weekdayStr = _weekdayNames[currentDay.weekday % 7];
+                          final weekdayStr =
+                              _weekdayNames[currentDay.weekday % 7];
 
                           return GestureDetector(
                             onTap: () {
@@ -243,19 +266,46 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                               width: 56,
                               margin: const EdgeInsets.symmetric(horizontal: 4),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFF0288D1) : Colors.transparent,
+                                color: isSelected
+                                    ? const Color(0xFF0288D1)
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.grey.shade300),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(weekdayStr, style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontSize: 12)),
-                                  const SizedBox(height: 4),
-                                  Text('${currentDay.day}', style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
                                   Text(
-                                    _monthNames[currentDay.month - 1].substring(0, 3),
-                                    style: TextStyle(color: isSelected ? Colors.white70 : Colors.grey, fontSize: 9),
+                                    weekdayStr,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${currentDay.day}',
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    _monthNames[currentDay.month - 1].substring(
+                                      0,
+                                      3,
+                                    ),
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white70
+                                          : Colors.grey,
+                                      fontSize: 9,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -276,13 +326,21 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   ],
 
                   // SELECT SPECIALTY DROP-DOWN
-                  const Text('Select Specialty:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const Text(
+                    'Select Specialty:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     value: _selectedSpecialty,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                     ),
                     items: _specialties.map((s) {
                       return DropdownMenuItem<String>(value: s, child: Text(s));
@@ -294,21 +352,32 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   ),
 
                   const SizedBox(height: 16),
-                  Text('Available Doctors (for ${_selectedSpecialty ?? ""}):', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Available Doctors (for ${_selectedSpecialty ?? ""}):',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 12),
 
                   // DOCTORS TRACK FEED LIST CONTAINER
                   if (_selectedDate == null)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Center(child: Text('Pick a date above to see available doctors.')),
+                      child: Center(
+                        child: Text(
+                          'Pick a date above to see available doctors.',
+                        ),
+                      ),
                     )
                   else if (_isLoadingDoctors)
                     const Center(child: CircularProgressIndicator())
                   else if (_doctorsWithSlots.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Center(child: Text('No doctors available with slots on this day.')),
+                      child: Center(
+                        child: Text(
+                          'No doctors available with slots on this day.',
+                        ),
+                      ),
                     )
                   else
                     SizedBox(
@@ -320,7 +389,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                           final doc = _doctorsWithSlots[docIdx];
                           final docId = doc['id'].toString();
                           final isSelectedDoc = _selectedDoctorId == docId;
-                          final slotsList = List<Map<String, dynamic>>.from(doc['available_slots'] ?? []);
+                          final slotsList = List<Map<String, dynamic>>.from(
+                            doc['available_slots'] ?? [],
+                          );
 
                           return GestureDetector(
                             onTap: () {
@@ -331,17 +402,25 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                             },
                             child: Container(
                               width: 180,
-                              margin: const EdgeInsets.only(right: 12, bottom: 4),
+                              margin: const EdgeInsets.only(
+                                right: 12,
+                                bottom: 4,
+                              ),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: isSelectedDoc ? const Color(0xFF0288D1) : Colors.grey.shade200,
+                                  color: isSelectedDoc
+                                      ? const Color(0xFF0288D1)
+                                      : Colors.grey.shade200,
                                   width: isSelectedDoc ? 2 : 1,
                                 ),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 4,
+                                  ),
                                 ],
                               ),
                               child: SingleChildScrollView(
@@ -351,39 +430,73 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                                     const CircleAvatar(
                                       radius: 25,
                                       backgroundColor: Colors.grey,
-                                      child: Icon(Icons.person, color: Colors.white),
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(doc['full_name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
-                                    Text(doc['specialty'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 11)),
-                                    Text('⭐ ${doc['rating'] ?? '5.0'}  ${doc['hospital'] ?? ''}', style: const TextStyle(fontSize: 10), textAlign: TextAlign.center),
+                                    Text(
+                                      doc['full_name'] ?? '',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Text(
+                                      doc['specialty'] ?? '',
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                    Text(
+                                      '⭐ ${doc['rating'] ?? '5.0'}  ${doc['hospital'] ?? ''}',
+                                      style: const TextStyle(fontSize: 10),
+                                      textAlign: TextAlign.center,
+                                    ),
 
                                     const Divider(height: 12),
 
-                                    // SUB-SELECTION WRAP CHIPS (Error Free Container Representation)
                                     slotsList.isEmpty
-                                        ? const Text('No active slots', style: TextStyle(fontSize: 10, color: Colors.red))
+                                        ? const Text(
+                                            'No active slots',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.red,
+                                            ),
+                                          )
                                         : Wrap(
                                             spacing: 4,
                                             runSpacing: 4,
                                             children: slotsList.map((slot) {
-                                              final slotTime = slot['time_slot'].toString();
-                                              final isSelectedSlot = _selectedTimeSlot == slotTime && isSelectedDoc;
+                                              final slotTime = slot['time_slot']
+                                                  .toString();
+                                              final isSelectedSlot =
+                                                  _selectedTimeSlot ==
+                                                      slotTime &&
+                                                  isSelectedDoc;
                                               return ChoiceChip(
                                                 label: Text(
                                                   slotTime,
                                                   style: TextStyle(
                                                     fontSize: 9,
-                                                    color: isSelectedSlot ? Colors.white : Colors.black,
+                                                    color: isSelectedSlot
+                                                        ? Colors.white
+                                                        : Colors.black,
                                                   ),
                                                 ),
                                                 selected: isSelectedSlot,
-                                                selectedColor: const Color(0xFF0288D1),
+                                                selectedColor: const Color(
+                                                  0xFF0288D1,
+                                                ),
                                                 onSelected: (selected) {
                                                   if (selected) {
                                                     setState(() {
                                                       _selectedDoctorId = docId;
-                                                      _selectedTimeSlot = slotTime;
+                                                      _selectedTimeSlot =
+                                                          slotTime;
                                                     });
                                                   }
                                                 },
@@ -401,32 +514,46 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
                   const SizedBox(height: 16),
 
-                  // VISIT REASON INPUT BOX
-                  const Text('Reason for Visit (optional)', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Reason for Visit (optional)',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: _reasonController,
                     decoration: InputDecoration(
                       hintText: "Enter reason...",
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     maxLines: 2,
                   ),
 
                   const SizedBox(height: 24),
 
-                  // CONFIRM EXECUTION SUBMIT BUTTON
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _availableDates.isEmpty ? null : _handleBookingSubmission,
+                      onPressed: _availableDates.isEmpty
+                          ? null
+                          : _handleBookingSubmission,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4FC3F7),
                         disabledBackgroundColor: Colors.grey.shade300,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('CONFIRM BOOKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'CONFIRM BOOKING',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),

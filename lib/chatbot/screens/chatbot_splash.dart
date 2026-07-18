@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'terms_conditions.dart';
 
 class ChatbotSplash extends StatelessWidget {
@@ -18,11 +17,7 @@ class ChatbotSplash extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-                Image.asset(
-                  "assets/images/chatbot_logo.png",
-                  width: 220,
-                ),
+                Image.asset("lib/Assets/chatbot_kalinga.png", width: 220),
 
                 const SizedBox(height: 25),
 
@@ -46,8 +41,7 @@ class ChatbotSplash extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff0A3D75),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
 
@@ -55,21 +49,17 @@ class ChatbotSplash extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              const TermsConditions(),
+                          builder: (_) => const TermsConditions(),
                         ),
                       );
                     },
 
                     child: const Text(
                       "START CHAT",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

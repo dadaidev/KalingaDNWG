@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../models/chat_message.dart';
-import '../service/openrouter_service.dart';
+import '../service/rule_based_service.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chatbot_appbar.dart';
 import '../widgets/message_input.dart';
@@ -15,9 +14,6 @@ class ChatbotHome extends StatefulWidget {
 
 class _ChatbotHomeState extends State<ChatbotHome> {
   final TextEditingController controller = TextEditingController();
-
-  /// OpenRouter Service
-  final OpenRouterService aiService = OpenRouterService();
 
   /// Chat Messages
   final List<ChatMessage> messages = [];
@@ -42,28 +38,21 @@ class _ChatbotHomeState extends State<ChatbotHome> {
     if (text.isEmpty || isLoading) return;
 
     setState(() {
-      messages.add(
-        ChatMessage(
-          text: text,
-          isUser: true,
-        ),
-      );
+      messages.add(ChatMessage(text: text, isUser: true));
 
       isLoading = true;
     });
 
     controller.clear();
 
-    /// Ask OpenRouter AI
-    final aiResponse = await aiService.sendMessage(text);
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final response = RuleBasedService.getResponse(text);
+
+    if (!mounted) return;
 
     setState(() {
-      messages.add(
-        ChatMessage(
-          text: aiResponse,
-          isUser: false,
-        ),
-      );
+      messages.add(ChatMessage(text: response, isUser: false));
 
       isLoading = false;
     });
@@ -110,10 +99,7 @@ class _ChatbotHomeState extends State<ChatbotHome> {
             ),
 
             /// Input Field
-            MessageInput(
-              controller: controller,
-              onSend: sendMessage,
-            ),
+            MessageInput(controller: controller, onSend: sendMessage),
           ],
         ),
       ),

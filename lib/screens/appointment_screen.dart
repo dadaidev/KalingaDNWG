@@ -20,8 +20,7 @@ class AppointmentScreen extends StatefulWidget {
 class _AppointmentScreenState extends State<AppointmentScreen> {
   final AppointmentService _service = AppointmentService();
 
-  // Resolved dynamically from the logged-in Supabase auth user
-  // (see AppointmentService.getCurrentPatientId). No longer hardcoded.
+  
   String? _patientId;
   Future<List<Appointment>>? _appointmentsFuture;
   bool _isResolvingPatient = true;

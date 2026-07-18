@@ -40,6 +40,7 @@ flutter:
     - .env
     - lib/Assets/kalinga.png
     - lib/Assets/kalinga_text.png
+    - lib/Assets/chatbot_kalinga.png
 
 flutter_launcher_icons:
   android: true
