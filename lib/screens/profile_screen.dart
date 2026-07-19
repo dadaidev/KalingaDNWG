@@ -1,27 +1,30 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Kalinga DNWG - Profile Screen
 /// Reached from Settings > Profile. Lets the user upload/change their
-/// profile photo, edit their username and password, and view their
-/// My Medication and Appointment History summaries.
+/// profile photo and username, and view their My Medication and
+/// Appointment History summaries.
 ///
-/// When the user taps "Save Changes", the currently selected profile
-/// image is popped back to the caller (Settings screen) so the two
-/// screens stay in sync.
+/// Both the username and the profile picture are persisted to Supabase
+/// (the `profiles` table + `avatars` storage bucket) when the user taps
+/// "Save Changes". This is what makes them survive navigation -- they
+/// are no longer just local widget state that resets whenever the
+/// Settings screen is rebuilt (e.g. switching tabs).
 class ProfileScreen extends StatefulWidget {
   final String userName;
 
-  /// The profile image currently shown on the Settings screen, if any.
+  /// The avatar URL currently shown on the Settings screen, if any.
   /// Passed in so this screen starts with the same picture already
-  /// selected instead of resetting to blank every time it's opened.
-  final File? currentProfileImage;
+  /// loaded instead of flashing blank while it re-fetches.
+  final String? currentAvatarUrl;
 
   const ProfileScreen({
     super.key,
     required this.userName,
-    this.currentProfileImage,
+    this.currentAvatarUrl,
   });
 
   @override
@@ -30,10 +33,17 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
-  File? _profileImage;
 
-  final TextEditingController _usernameController =
-      TextEditingController();
+  /// Bagong pinili na larawan na hindi pa naka-upload -- ipapakita agad
+  /// (local preview) habang naghihintay ng "Save Changes".
+  File? _pendingImage;
+
+  /// Kasalukuyang naka-save na avatar URL mula sa database.
+  String? _avatarUrl;
+
+  bool _isSaving = false;
+
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   // ---- Palette (matched to Settings screen / mockups) ----
@@ -45,8 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Start with whatever picture is already set on the Settings screen.
-    _profileImage = widget.currentProfileImage;
+    _avatarUrl = widget.currentAvatarUrl;
     _usernameController.text = widget.userName;
   }
 
@@ -58,7 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    // Let the user choose between camera and gallery.
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.white,
@@ -94,8 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         maxWidth: 1000,
       );
       if (pickedFile != null) {
-        setState(() => _profileImage = File(pickedFile.path));
-        // TODO: upload _profileImage to backend / storage here.
+        setState(() => _pendingImage = File(pickedFile.path));
       }
     } catch (e) {
       if (mounted) {
@@ -106,16 +113,99 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _saveProfile() {
-    // TODO: persist username / password changes to backend.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Changes saved successfully.')),
-    );
+  /// Ini-upload ang napiling larawan sa Supabase Storage, ibinabalik
+  /// ang public URL nito. Ginagamit ang user_id bilang folder para
+  /// consistent ang path at hindi mag-collide ang mga user.
+  Future<String> _uploadAvatar(File imageFile, String userId) async {
+    final supabase = Supabase.instance.client;
+    final extension = imageFile.path.split('.').last;
+    final filePath = '$userId/avatar.$extension';
 
-    // Send the (possibly new) profile picture back to the Settings
-    // screen so it shows up there immediately, without needing a
-    // shared state manager or backend round-trip.
-    Navigator.of(context).pop(_profileImage);
+    await supabase.storage.from('avatars').upload(
+          filePath,
+          imageFile,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    // Cache-bust ang URL gamit ang timestamp para agad ma-reflect ang
+    // bagong larawan sa mga Image widget na naka-cache ng lumang URL.
+    final publicUrl = supabase.storage.from('avatars').getPublicUrl(filePath);
+    return '$publicUrl?updated=${DateTime.now().millisecondsSinceEpoch}';
+  }
+
+  Future<void> _saveProfile() async {
+    final newUsername = _usernameController.text.trim();
+
+    if (newUsername.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Username cannot be empty.')),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+
+      if (userId == null) {
+        throw Exception('You must be logged in to save changes.');
+      }
+
+      String? newAvatarUrl = _avatarUrl;
+
+      if (_pendingImage != null) {
+        newAvatarUrl = await _uploadAvatar(_pendingImage!, userId);
+      }
+
+      await supabase.from('profiles').upsert({
+        'id': userId,
+        'username': newUsername,
+        'avatar_url': newAvatarUrl,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+
+      // Kung may binago sa password field, i-update din sa Supabase Auth.
+      // Hiwalay ito sa profiles table dahil auth.users ang naghahawak ng
+      // password, hindi ang profiles row.
+      final newPassword = _passwordController.text.trim();
+      if (newPassword.isNotEmpty) {
+        await supabase.auth.updateUser(
+          UserAttributes(password: newPassword),
+        );
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Changes saved successfully.')),
+      );
+
+      // Ibalik ang bagong username at avatar URL papunta sa Settings
+      // screen para agad ma-update ang display doon nang hindi na
+      // kailangan mag-refetch.
+      Navigator.of(context).pop({
+        'username': newUsername,
+        'avatarUrl': newAvatarUrl,
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save changes: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  ImageProvider? get _avatarImageProvider {
+    if (_pendingImage != null) return FileImage(_pendingImage!);
+    if (_avatarUrl != null && _avatarUrl!.isNotEmpty) {
+      return NetworkImage(_avatarUrl!);
+    }
+    return null;
   }
 
   @override
@@ -148,9 +238,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 48,
                       backgroundColor: kAccentTeal,
-                      backgroundImage:
-                          _profileImage != null ? FileImage(_profileImage!) : null,
-                      child: _profileImage == null
+                      backgroundImage: _avatarImageProvider,
+                      child: _avatarImageProvider == null
                           ? const Icon(Icons.person, size: 52, color: Colors.white)
                           : null,
                     ),
@@ -211,11 +300,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: _saveProfile,
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+                onPressed: _isSaving ? null : _saveProfile,
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
           ],
