@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
 import '../widgets/greeting_widget.dart';
@@ -24,10 +25,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Assumption: using the real current date now that the calendar is
-  // backed by live data, instead of the old hardcoded 2026-07-11 demo
-  // value. If you'd rather keep testing against a fixed date, swap this
-  // back to a literal DateTime(...).
   final DateTime todayDate = DateTime.now();
 
   final MedicationService _service = MedicationService();
@@ -36,21 +33,51 @@ class _HomePageState extends State<HomePage> {
   late DateTime selectedDay;
 
   List<Medicine> _medicines = [];
-  // Keyed by "reminderId_yyyy-MM-dd" -> 'Taken' | 'Missed' | 'Skipped'
   Map<String, String> _logs = {};
 
   bool _isLoading = true;
   String? _loadError;
 
-  // Home is index 2: Appointment(0), Cabinet(1), Home(2), Doctor(3), Settings(4)
+  // Naka-save na username mula sa `profiles` table. Nagsisimula sa
+  // widget.userName (para walang lumang default na palaging babalik dito)
+  // pero pinapalitan agad kung may mas bago sa database -- kaya pag
+  // nag-edit ng username sa Profile screen at bumalik dito sa Home,
+  // makikita agad ang updated na greeting, hindi na yung stale
+  // constructor value.
+  late String _displayName;
+
   static const int _tabIndex = 2;
 
   @override
   void initState() {
     super.initState();
+    _displayName = widget.userName;
     focusedMonth = DateTime(todayDate.year, todayDate.month, 1);
     selectedDay = todayDate;
     _loadAll();
+    _loadDisplayName();
+  }
+
+  Future<void> _loadDisplayName() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final row = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (!mounted || row == null) return;
+      final savedUsername = row['username'] as String?;
+      if (savedUsername != null && savedUsername.isNotEmpty) {
+        setState(() => _displayName = savedUsername);
+      }
+    } catch (_) {
+      // Wala pang profile row -- mananatili ang widget.userName default.
+    }
   }
 
   String _dateStr(DateTime d) =>
@@ -68,8 +95,6 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final medicines = await _service.getMedications();
-      // reminderId is now int? (matches medication_reminders.reminder_id,
-      // an integer column) -- was mistakenly filtered as String? before.
       final reminderIds = medicines
           .map((m) => m.reminderId)
           .whereType<int>()
@@ -112,7 +137,6 @@ class _HomePageState extends State<HomePage> {
     setState(() => _logs = logs);
   }
 
-  /// Union of every date any medicine is due, across the focused month.
   Set<DateTime> get daysWithDose {
     final due = <DateTime>{};
     for (final m in _medicines) {
@@ -121,8 +145,6 @@ class _HomePageState extends State<HomePage> {
     return due;
   }
 
-  /// A day shows the calendar "taken" pin if at least one log for that
-  /// day, among this month's reminders, is 'Taken'.
   Set<DateTime> get takenDays {
     final taken = <DateTime>{};
     for (final entry in _logs.entries) {
@@ -134,9 +156,6 @@ class _HomePageState extends State<HomePage> {
     return taken;
   }
 
-  /// Medicines due on [selectedDay], resolved against any existing log.
-  /// 'As Needed' (or any medicine with no automatic due day) still shows
-  /// up if a log already exists for that day.
   List<MedicineItem> get medicinesToday {
     final day = dateOnly(selectedDay);
     final items = <MedicineItem>[];
@@ -189,11 +208,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Tapping a medicine card cycles its status for the selected day:
-  /// Upcoming -> Taken -> Missed -> Skipped -> Taken -> ...
-  /// and persists each step via medication_logs.
   Future<void> _cycleStatus(MedicineItem item) async {
-    if (item.reminderId == null) return; // nothing to write against
+    if (item.reminderId == null) return;
 
     final nextStatus = _nextDbStatus(item.status);
 
@@ -227,18 +243,15 @@ class _HomePageState extends State<HomePage> {
     _reloadLogsForFocusedMonth();
   }
 
-  // Home, Cabinet, Appointment, Doctor, and Settings now all have real
-  // screens. Uses pushReplacement so the stack stays consistent with the
-  // other tab screens (no back-stack pileup when switching tabs).
   void _onTabTapped(int index) {
     if (index == _tabIndex) return; // already on Home
 
     final Widget destination = switch (index) {
-      0 => AppointmentScreen(userName: widget.userName),
-      1 => CabinetScreen(userName: widget.userName),
-      3 => DoctorScreen(userName: widget.userName),
-      4 => SettingsScreen(userName: widget.userName),
-      _ => HomePage(userName: widget.userName),
+      0 => AppointmentScreen(userName: _displayName),
+      1 => CabinetScreen(userName: _displayName),
+      3 => DoctorScreen(userName: _displayName),
+      4 => SettingsScreen(userName: _displayName),
+      _ => HomePage(userName: _displayName),
     };
 
     Navigator.of(context).pushReplacement(
@@ -250,7 +263,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopBar(),
-
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -270,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        GreetingWidget(userName: widget.userName),
+                        GreetingWidget(userName: _displayName),
 
                         const SizedBox(height: 20),
 
@@ -281,7 +293,7 @@ class _HomePageState extends State<HomePage> {
                           daysWithDose: daysWithDose,
                           takenDays: takenDays,
                           onSelectDay: selectDay,
-                          onToggleTaken: (_) {}, // manual toggle removed — status now driven by real logs via card taps
+                          onToggleTaken: (_) {},
                           onChangeMonth: changeMonth,
                         ),
 
@@ -310,7 +322,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
       ),
-
       bottomNavigationBar: BottomBar(
         currentIndex: _tabIndex,
         onTap: _onTabTapped,

@@ -5,14 +5,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Kalinga DNWG - Profile Screen
 /// Reached from Settings > Profile. Lets the user upload/change their
-/// profile photo and username, and view their My Medication and
-/// Appointment History summaries.
+/// profile photo and username.
 ///
 /// Both the username and the profile picture are persisted to Supabase
 /// (the `profiles` table + `avatars` storage bucket) when the user taps
 /// "Save Changes". This is what makes them survive navigation -- they
 /// are no longer just local widget state that resets whenever the
 /// Settings screen is rebuilt (e.g. switching tabs).
+///
+/// NOTE: Appointment History was moved to the Settings screen as its
+/// own modal (next to Medication History) so both history views live
+/// in one place.
 class ProfileScreen extends StatefulWidget {
   final String userName;
 
@@ -44,7 +47,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isSaving = false;
 
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
 
   // ---- Palette (matched to Settings screen / mockups) ----
   static const Color kDarkTeal = Color(0xFF1E5A66);
@@ -62,7 +64,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -106,9 +107,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to get image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to get image: $e')));
       }
     }
   }
@@ -121,7 +122,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final extension = imageFile.path.split('.').last;
     final filePath = '$userId/avatar.$extension';
 
-    await supabase.storage.from('avatars').upload(
+    await supabase.storage
+        .from('avatars')
+        .upload(
           filePath,
           imageFile,
           fileOptions: const FileOptions(upsert: true),
@@ -166,16 +169,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'updated_at': DateTime.now().toIso8601String(),
       });
 
-      // Kung may binago sa password field, i-update din sa Supabase Auth.
-      // Hiwalay ito sa profiles table dahil auth.users ang naghahawak ng
-      // password, hindi ang profiles row.
-      final newPassword = _passwordController.text.trim();
-      if (newPassword.isNotEmpty) {
-        await supabase.auth.updateUser(
-          UserAttributes(password: newPassword),
-        );
-      }
-
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -185,15 +178,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // Ibalik ang bagong username at avatar URL papunta sa Settings
       // screen para agad ma-update ang display doon nang hindi na
       // kailangan mag-refetch.
-      Navigator.of(context).pop({
-        'username': newUsername,
-        'avatarUrl': newAvatarUrl,
-      });
+      Navigator.of(
+        context,
+      ).pop({'username': newUsername, 'avatarUrl': newAvatarUrl});
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save changes: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save changes: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -240,7 +232,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundColor: kAccentTeal,
                       backgroundImage: _avatarImageProvider,
                       child: _avatarImageProvider == null
-                          ? const Icon(Icons.person, size: 52, color: Colors.white)
+                          ? const Icon(
+                              Icons.person,
+                              size: 52,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                   ),
@@ -266,28 +262,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               controller: _usernameController,
               hintText: 'Enter your username',
             ),
-            const SizedBox(height: 18),
-            _FieldLabel('Edit Password'),
-            const SizedBox(height: 6),
-            _EditableField(
-              controller: _passwordController,
-              hintText: 'Enter new password',
-              obscureText: true,
-            ),
-            const SizedBox(height: 18),
-            _FieldLabel('My Medication'),
-            const SizedBox(height: 6),
-            _InfoBox(
-              // TODO: replace with actual medication list from data source.
-              child: _EmptyHint(text: 'No medications listed yet.'),
-            ),
-            const SizedBox(height: 18),
-            _FieldLabel('Appointment History'),
-            const SizedBox(height: 6),
-            _InfoBox(
-              // TODO: replace with actual appointment history from data source.
-              child: _EmptyHint(text: 'No appointment history yet.'),
-            ),
             const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
@@ -312,7 +286,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )
                     : const Text(
                         'Save Changes',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
               ),
             ),
@@ -358,7 +335,9 @@ class _EditableField extends StatelessWidget {
       decoration: BoxDecoration(
         color: _ProfileScreenState.kFieldBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _ProfileScreenState.kAccentTeal.withOpacity(0.3)),
+        border: Border.all(
+          color: _ProfileScreenState.kAccentTeal.withOpacity(0.3),
+        ),
       ),
       child: TextField(
         controller: controller,
@@ -368,44 +347,11 @@ class _EditableField extends StatelessWidget {
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey.shade400),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _InfoBox extends StatelessWidget {
-  final Widget child;
-  const _InfoBox({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 90),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: _ProfileScreenState.kFieldBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _ProfileScreenState.kAccentTeal.withOpacity(0.3)),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _EmptyHint extends StatelessWidget {
-  final String text;
-  const _EmptyHint({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topLeft,
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.grey, fontSize: 13),
       ),
     );
   }

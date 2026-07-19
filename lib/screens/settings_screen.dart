@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/bottom_bar.dart';
 import '../services/medication_service.dart';
+import '../services/appointment_service.dart';
+import '../models/appointment.dart';
 import 'home_page.dart';
 import 'appointment_screen.dart';
 import 'cabinet_screen.dart';
@@ -12,7 +14,15 @@ import 'login_screen.dart';
 
 /// Which modal card is currently expanded over the settings list.
 /// `none` means the plain list is shown.
-enum _SettingsModal { none, medicationHistory, about, feedback, logout }
+enum _SettingsModal {
+  none,
+  medicationHistory,
+  appointmentHistory,
+  about,
+  howToUse,
+  feedback,
+  logout,
+}
 
 class SettingsScreen extends StatefulWidget {
   final String userName;
@@ -36,6 +46,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Set fresh each time the Medication History modal is opened, so it
   // always reflects doses taken since the screen was last shown.
   Future<List<Map<String, String>>>? _medicationHistoryFuture;
+
+  // Moved here from ProfileScreen so both history views live under
+  // Settings. Set fresh each time the modal is opened, same pattern as
+  // Medication History above.
+  final AppointmentService _appointmentService = AppointmentService();
+  Future<List<Appointment>>? _appointmentsFuture;
 
   // Naka-save na sa `profiles` table sa Supabase, kaya hindi na nawawala
   // kapag nagpalit ng tab (dati ay File _profileImage lang ito, local
@@ -85,9 +101,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
+  /// Kinukuha muna ang patient id ng naka-login (kaparehong paraan ng
+  /// AppointmentScreen), tapos ang mga appointment nito, para lumabas
+  /// ang Appointment History modal.
+  void _loadAppointmentHistory() {
+    _appointmentsFuture = _appointmentService.getCurrentPatientId().then((
+      patientId,
+    ) {
+      if (patientId == null) {
+        throw Exception('No patient record linked to this account.');
+      }
+      return _appointmentService.getMyAppointments(patientId);
+    });
+  }
+
   void _openModal(_SettingsModal modal) {
     if (modal == _SettingsModal.medicationHistory) {
       _medicationHistoryFuture = _medicationService.getMedicationHistory();
+    } else if (modal == _SettingsModal.appointmentHistory) {
+      _loadAppointmentHistory();
     }
     setState(() => _activeModal = modal);
   }
@@ -100,16 +132,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (index == _tabIndex) return; // already on Settings
 
     final Widget destination = switch (index) {
-      0 => AppointmentScreen(userName: widget.userName),
-      1 => CabinetScreen(userName: widget.userName),
-      2 => HomePage(userName: widget.userName),
-      3 => DoctorScreen(userName: widget.userName),
-      _ => SettingsScreen(userName: widget.userName),
+      0 => AppointmentScreen(userName: _displayName),
+      1 => CabinetScreen(userName: _displayName),
+      2 => HomePage(userName: _displayName),
+      3 => DoctorScreen(userName: _displayName),
+      _ => SettingsScreen(userName: _displayName),
     };
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => destination),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => destination));
   }
 
   Future<void> _openProfile() async {
@@ -118,10 +150,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // back when the user taps "Save Changes" there.
     final result = await Navigator.of(context).push<Map<String, String?>>(
       MaterialPageRoute(
-        builder: (_) => ProfileScreen(
-          userName: _displayName,
-          currentAvatarUrl: _avatarUrl,
-        ),
+        builder: (_) =>
+            ProfileScreen(userName: _displayName, currentAvatarUrl: _avatarUrl),
       ),
     );
 
@@ -220,9 +250,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 15),
 
                   _SettingsTile(
+                    icon: Icons.event_note_outlined,
+                    label: "Appointment History",
+                    onTap: () => _openModal(_SettingsModal.appointmentHistory),
+                  ),
+                  const SizedBox(height: 15),
+
+                  _SettingsTile(
                     icon: Icons.info_outline,
                     label: "About Kalinga",
                     onTap: () => _openModal(_SettingsModal.about),
+                  ),
+                  const SizedBox(height: 15),
+
+                  _SettingsTile(
+                    icon: Icons.help_outline,
+                    label: "How to Use This App",
+                    onTap: () => _openModal(_SettingsModal.howToUse),
                   ),
                   const SizedBox(height: 15),
 
@@ -373,6 +417,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
         break;
 
+      case _SettingsModal.appointmentHistory:
+        content = _ModalCard(
+          icon: Icons.event_note_outlined,
+          title: "Appointment History",
+          onClose: _closeModal,
+          child: SizedBox(
+            height: 320,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: FutureBuilder<List<Appointment>>(
+                future: _appointmentsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          "Could not load appointments: ${snapshot.error}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.black45),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final appointments = snapshot.data ?? [];
+
+                  if (appointments.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No appointment history yet.",
+                        style: TextStyle(color: Colors.black45),
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    itemCount: appointments.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final appt = appointments[index];
+                      final doctorName =
+                          appt.doctor?.fullName ?? 'Unknown Doctor';
+                      final hospital = appt.doctor?.hospital ?? '';
+
+                      return ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          doctorName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${appt.timeSlot} • ${appt.date}'
+                          '${hospital.isNotEmpty ? '\n$hospital' : ''}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        isThreeLine: hospital.isNotEmpty,
+                        trailing: _AppointmentStatusChip(status: appt.status),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+        break;
+
       case _SettingsModal.about:
         content = _ModalCard(
           icon: Icons.info_outline,
@@ -424,6 +548,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _AboutParagraph("N - Nash"),
                   _AboutParagraph("W - Wilson"),
                   _AboutParagraph("G - Gerald"),
+                ],
+              ),
+            ),
+          ),
+        );
+        break;
+
+      case _SettingsModal.howToUse:
+        content = _ModalCard(
+          icon: Icons.help_outline,
+          title: "How to Use This App",
+          onClose: _closeModal,
+          child: SizedBox(
+            height: 420,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  _AboutHeading("1. Add Your Medicines"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "Go to the Cabinet tab and add each medicine you "
+                    "take, including its name, dosage, and the time "
+                    "you need to take it. The app will use this to "
+                    "build your daily schedule.",
+                  ),
+                  SizedBox(height: 14),
+                  _AboutHeading("2. Check Today's Medicine"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "On the Home tab, you'll see a calendar and a list "
+                    "of medicines due for the selected day. Days with "
+                    "a scheduled dose are marked on the calendar so "
+                    "you can plan ahead.",
+                  ),
+                  SizedBox(height: 14),
+                  _AboutHeading("3. Mark a Dose as Taken"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "Tap a medicine card on the Home tab to update its "
+                    "status. Each tap cycles it through Taken, Missed, "
+                    "and Skipped, so your records stay accurate.",
+                  ),
+                  SizedBox(height: 14),
+                  _AboutHeading("4. Book and Track Appointments"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "Use the Appointment tab to schedule visits with "
+                    "your doctor. You can review past and upcoming "
+                    "appointments anytime under Settings > Appointment "
+                    "History.",
+                  ),
+                  SizedBox(height: 14),
+                  _AboutHeading("5. Review Your History"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "Settings > Medication History shows a full record "
+                    "of doses you've taken, missed, or skipped, so you "
+                    "and your doctor can track your adherence over "
+                    "time.",
+                  ),
+                  SizedBox(height: 14),
+                  _AboutHeading("6. Keep Your Profile Updated"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "Tap your name under Settings to update your "
+                    "username or profile photo. Keeping this current "
+                    "helps your doctor recognize your records.",
+                  ),
+                  SizedBox(height: 14),
+                  _AboutHeading("Need Help?"),
+                  SizedBox(height: 6),
+                  _AboutParagraph(
+                    "If something isn't working as expected, use the "
+                    "Feedback option below to let the DNWG team know.",
+                  ),
                 ],
               ),
             ),
@@ -575,8 +775,6 @@ class _ProfileTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Buong tile ang pupuntahan sa Profile screen, kung saan
-            // talaga nangyayari ang pag-upload/palit ng larawan.
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -614,11 +812,17 @@ class _ProfileTile extends StatelessWidget {
               children: [
                 const Text(
                   "Profile",
-                  style: TextStyle(color: Colors.black54, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
                 Text(
                   userName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -689,7 +893,11 @@ class _ModalCard extends StatelessWidget {
           color: const Color(0xFFCFE6EC),
           borderRadius: BorderRadius.circular(20),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, 6)),
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
           ],
         ),
         child: Column(
@@ -703,12 +911,19 @@ class _ModalCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 InkWell(
                   onTap: onClose,
-                  child: const Icon(Icons.close, size: 20, color: Colors.black45),
+                  child: const Icon(
+                    Icons.close,
+                    size: 20,
+                    color: Colors.black45,
+                  ),
                 ),
               ],
             ),
@@ -745,6 +960,43 @@ class _AboutParagraph extends StatelessWidget {
       text,
       textAlign: TextAlign.center,
       style: const TextStyle(fontSize: 13, height: 1.4),
+    );
+  }
+}
+
+class _AppointmentStatusChip extends StatelessWidget {
+  final String status;
+  const _AppointmentStatusChip({required this.status});
+
+  Color get _color {
+    switch (status) {
+      case 'Upcoming':
+        return Colors.blue;
+      case 'Done':
+        return Colors.green;
+      case 'Cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: _color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }
